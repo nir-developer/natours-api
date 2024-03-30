@@ -40,10 +40,24 @@ exports.getAllTours = async (req,res,next)=>{
 
         const {difficulty, duration} = queryObj;
 
-        const query = Tour.find().where('difficulty').equals(difficulty).where('duration').equals(duration)
-       
+
+        // let query = Tour.find().where('difficulty').equals(difficulty).where('duration').equals(duration)
+
+
+        //ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
+        let queryStr = JSON.stringify(queryObj)
+        queryStr =queryStr.replace(/\b(lte|lt|gte|gt)\b/g,match => `$${match}`)
+        //Query Object: { duration: { gte: '5' } } { duration: { gte: '5' } }
+        // => OK Filter Object{ duration: { '$gte': '5' } } - this is the Filter Object  I want to pass to Mongoose query!
+        console.log(JSON.parse(queryStr))
+
+        
+        const query = Tour.find(JSON.parse(queryStr))
+
+
+        
         //EXECUTE THE QUERY
-        const tours = await query
+        const tours = await query 
 
         
 
