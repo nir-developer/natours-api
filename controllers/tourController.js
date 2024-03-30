@@ -46,6 +46,7 @@ exports.getAllTours = async (req,res,next)=>{
 
         //ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
         let queryStr = JSON.stringify(queryObj)
+        
         queryStr =queryStr.replace(/\b(lte|lt|gte|gt)\b/g,match => `$${match}`)
         //Query Object: { duration: { gte: '5' } } { duration: { gte: '5' } }
         // => OK Filter Object{ duration: { '$gte': '5' } } - this is the Filter Object  I want to pass to Mongoose query!
