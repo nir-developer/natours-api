@@ -69,7 +69,22 @@ exports.getAllTours = async (req,res,next)=>{
         }
 
 
-       
+        //FEATURE 3:FIELD LIMITING
+       if(req.query.fields)
+       {    
+        //Create an array of strings from the query req.query.fieldss
+        const fields = req.query.fields.split(',').join(' ')
+
+        //MONGOOSE EXPECTS FIELDS SEPARATED BY SPACES 
+        query = query.select(fields) 
+       }
+       else
+       {
+        //DEFAULT IF USER DOES NOT SPEICFY THE FIELDS
+        // EXCLUDE (DONT DISABLE) THE ANNOYING MONGODB FIELD FROM THE RESPONSE
+         query.select('-__v')
+       }
+
 
 
         

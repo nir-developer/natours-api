@@ -53,7 +53,10 @@ const tourSchema = new mongoose.Schema({
     createdAt:{
         type:Date, 
         //timestamp (m.s) - mo
-        default:Date.now()
+        default:Date.now(),
+        //EXCLUDE THIS FIELD FROM THE SCEMA - SO USER CAN NOT SEE IF TOUR IS OUTDATED
+        select:false
+
     }, 
     startDates:[Date]
 
