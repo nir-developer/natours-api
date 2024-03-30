@@ -29,7 +29,8 @@ exports.getAllTours = async (req,res,next)=>{
 
     try 
     {
-      
+        
+        //FEATURE 1.A) Filtering
         ///BUILD THE QUERY(before executing it)
         const queryObj = {...req.query};
         const excludedFields = ['page', 'sort', 'limit', 'fields']
@@ -40,20 +41,35 @@ exports.getAllTours = async (req,res,next)=>{
 
         const {difficulty, duration} = queryObj;
 
-
-        // let query = Tour.find().where('difficulty').equals(difficulty).where('duration').equals(duration)
-
-
-        //ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
+        //FEATURE 1.B : ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
         let queryStr = JSON.stringify(queryObj)
-        
+
         queryStr =queryStr.replace(/\b(lte|lt|gte|gt)\b/g,match => `$${match}`)
         //Query Object: { duration: { gte: '5' } } { duration: { gte: '5' } }
         // => OK Filter Object{ duration: { '$gte': '5' } } - this is the Filter Object  I want to pass to Mongoose query!
-        console.log(JSON.parse(queryStr))
+        //console.log(JSON.parse(queryStr))
 
         
-        const query = Tour.find(JSON.parse(queryStr))
+        ///Returns a Query - and store the query - dont await it! just store it - only as the last step await it to execute the query 
+         let query = Tour.find(JSON.parse(queryStr))
+        ///FEATURE 2: SORTING
+        if(req.query.sort) 
+        {   //SORT BY 2 CRITERIA :http://localhost:3000/natours/api/v1/tours?sort=price ratingsAverage
+            //SEPARATE THE QUERY STRINGS BY COMMA -> SPLIT: to get AN ARRAY OF ALL FIELDS NAME IN THE URL - AND THEN JOING THEM TOGETHER TO ONE STRING
+            const sortBy = req.query.sort.split(',').join(' ');
+            console.log(sortBy)
+            //FOR THE URL : http://localhost:3000/natours/api/v1/tours?sort=price
+            //=>MONGOOSE WILL SORT the result based on the price field
+            query = query.sort(sortBy)
+        }
+        else 
+        {
+            //DEFAULT SORTING : by createdAt Descending order:  NEWEST TOURS ARE DISPLAYED FIRST SINCE THEY HAVE LARGER TIMESTAMP!!
+            query = query.sort('-createdAt'); 
+        }
+
+
+       
 
 
         
