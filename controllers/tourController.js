@@ -1,3 +1,4 @@
+const { query } = require('express')
 const Tour = require('../models/Tour')
 
 
@@ -24,12 +25,30 @@ exports.createTour = async (req,res,next) =>{
 }
 
 
-exports.findAllTours = async (req,res,next)=>{
+exports.getAllTours = async (req,res,next)=>{
 
     try 
     {
-        const tours = await Tour.find();
+      
+        ///BUILD THE QUERY(before executing it)
+        const queryObj = {...req.query};
+        const excludedFields = ['page', 'sort', 'limit', 'fields']
+        excludedFields.forEach(el => delete queryObj[el])
+        
+        console.log(req.query,  queryObj);
 
+
+        const {difficulty, duration} = queryObj;
+
+        const query = Tour.find().where('difficulty').equals(difficulty).where('duration').equals(duration)
+       
+        //EXECUTE THE QUERY
+        const tours = await query
+
+        
+
+
+        //SEND RESPONSE
         res.status(200).json({
             status:'success', 
             results: tours.length, 
@@ -42,7 +61,7 @@ exports.findAllTours = async (req,res,next)=>{
     {
         res.status(400).json({
             status:'fail',
-             message:err
+             message:err.message
             })
     }
 }
