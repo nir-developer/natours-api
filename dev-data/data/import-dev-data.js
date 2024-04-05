@@ -9,7 +9,8 @@ const tourRouter = require('../../routes/tourRoutes')
 
 
 //STEP 1: CONNECT TO DB
-const DB = process.env.DB_ATLAS
+//const DB = process.env.DB_ATLAS
+const DB = process.env.DB_COMPASS
 console.log(DB)
 // CONNECT TO DB  - TOP LEVEL!
 mongoose

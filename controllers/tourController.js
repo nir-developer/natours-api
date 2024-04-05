@@ -2,26 +2,20 @@ const { query } = require('express')
 const Tour = require('../models/Tour')
 
 
+//ALIAS M.W - WILL BE EXECUTED BEFORE THE getAllTours() THAT CONTAINS ALL API FEATURES
+exports.aliasTopTours = (req,res,next) =>{
 
+    //POPULATE  req.query object based on url:
+    //http://localhost:3000/natours/api/v1/tours?limit=5&sort=-averageRatings,price
 
-exports.createTour = async (req,res,next) =>{
-   try 
-   {
-       const tour = await Tour.create(req.body)
+    //SET TO STRING !
+    req.query.limit = '5'
+    req.query.sort = '-averageRatings,price' 
+    //IMPORTANT - POPULATE SOME  FIELDS - SO IN THE NEXT M.W(findAllTours) WILL USE THE LIMING FIELDS(PROJECTION) 
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
 
-       res.status(201).json({
-        status:'success', 
-        data:{
-            tour
-        }
-       })
-
-   }
-   catch(err)
-   {
-        res.status(400).json({status:'fail', message:'Invalid data sent!'})
-   }
-     
+    next(); 
+    
 }
 
 
@@ -29,7 +23,6 @@ exports.getAllTours = async (req,res,next)=>{
 
     try 
     {
-        
         //FEATURE 1.A) Filtering
         ///BUILD THE QUERY(before executing it)
         const queryObj = {...req.query};
@@ -39,7 +32,7 @@ exports.getAllTours = async (req,res,next)=>{
         console.log(req.query,  queryObj);
 
 
-        const {difficulty, duration} = queryObj;
+        
 
         //FEATURE 1.B : ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
         let queryStr = JSON.stringify(queryObj)
@@ -86,14 +79,42 @@ exports.getAllTours = async (req,res,next)=>{
        }
 
 
+       ////////////////////////////////////
+       //FEATURE 4: PAGINATION 
+       ////////////////////
 
-        
+       // page=2&limit=10  => User want page 2 with 10 results per page 
+       //=> 1-10 on page 1, 11-20 on page 2 
+       
+       //READ THE QUERY STRINGS FROM THE REQUEST , CONVERT TO NUMBER-
+       //IF NO QUERY STRINGS - THEN DEFINED DEFAULTS1
+       const page = req.query.page * 1 || 1 
+       const limit = req.query.limit * 1 || 100
+
+      
+       //COMPUTE THE SKIP VALUE - NUMBER OF DOCUMENTS TO BE SKIP
+       const skip = (page - 1) * limit;
+
+
+       //GOURD CLAUSE - FOR WHEN THE USER SENT THE PAGE QUERY STRING AND THERE ARE NO RESULTS 
+       //DONT RETURN AN EMPTY LIST AS MONGOOSE DOES
+       if(req.query.page)
+       {
+        //COMPUTE NUMBER OF TOURS IN THE COLLECTION
+        const numberOfTours = await Tour.countDocuments(); 
+        console.log(numberOfTours)
+
+        if(numberOfTours < skip) throw new Error(`This page does not exist`)
+
+       }
+       //TEST THE REQUEST FOR ONE PAGE WITH 3 RESULTS - OK!
+       query.skip(skip).limit(limit);
+
+
         //EXECUTE THE QUERY
         const tours = await query 
 
-        
-
-
+    
         //SEND RESPONSE
         res.status(200).json({
             status:'success', 
@@ -105,12 +126,35 @@ exports.getAllTours = async (req,res,next)=>{
     }
     catch(err)
     {
-        res.status(400).json({
+        res.status(404).json({
             status:'fail',
              message:err.message
             })
     }
 }
+
+
+
+exports.createTour = async (req,res,next) =>{
+   try 
+   {
+       const tour = await Tour.create(req.body)
+
+       res.status(201).json({
+        status:'success', 
+        data:{
+            tour
+        }
+       })
+
+   }
+   catch(err)
+   {
+        res.status(400).json({status:'fail', message:'Invalid data sent!'})
+   }
+     
+}
+
 
 exports.findTour = async (req,res,next) =>{
     try 

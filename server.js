@@ -29,12 +29,15 @@ const setDatabase = () =>{
 }
 
 
-setEnvironment()
-setDatabase();
+// setEnvironment()
+// setDatabase();
 
 
 const PORT = process.env.PORT || 3000; 
-const DB = process.env.DB;
+// const DB = process.env.DB;
+const DB = process.env.DB_COMPASS;
+
+
 
 mongoose.connect(DB) 
 .then(()=> {
