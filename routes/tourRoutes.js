@@ -7,8 +7,15 @@ const tourRouter = express.Router();
 tourRouter.get('/top-5-cheap',tourController.aliasTopTours, tourController.getAllTours)
 
 
+//////////////////
+//STATS ROUTE - AGGREGATION PIPELINE
+tourRouter.route('/tour-stats').get(tourController.getTourStats);
+
+tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 
+///////////////
+//API (get is the API features)
 tourRouter.route('/')
     .post(tourController.createTour) 
     .get(tourController.getAllTours) 

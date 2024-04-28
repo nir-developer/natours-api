@@ -27,128 +27,6 @@ exports.aliasTopTours = (req,res,next) =>{
 }
 
 
-/**Reusable class contains all API FEATURES - to be used by all resources
- * THIS CAN BE DONE BY INJECTING THE Mongoose.Query object in the constructor class 
- * instead of quering for the Tour inside the class - and therefore bound it to the Tour resource
-//NOTE: 
-//query is Mongoose Query object, 
-//queryString : req.query object from express
- */
-// class APIFeatures{
-//     constructor(query, queryString)
-//     {
-//         this.query = query ; 
-//         this.queryString = queryString;
-//     }
-    
-//     //API-FEATURE 1: FILTERING 
-//     //FEATURE 1.A) Filtering
-//     //BEFORE REFACTORING TO THIS CLASS
-//      //let query = this.query.find(JSON.parse(queryStr))
-//     filter()
-//     {
-        
-//         const queryObj = {...this.queryString};
-//         const excludedFields = ['page', 'sort', 'limit', 'fields']
-       
-//         excludedFields.forEach(el => delete queryObj[el])
-        
-//        // console.log(this.query,  queryObj);
-
-
-//         //FEATURE 1.B : ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
-//         let queryStr = JSON.stringify(queryObj)
-//         queryStr =queryStr.replace(/\b(lte|lt|gte|gt)\b/g,match => `$${match}`)
-        
-
-//         //UPDATE THE query instance property to the query parameter
-//         this.query = this.query.find(JSON.parse(queryStr))
-
-//         return this;
-//     }
-       
-
-//     //2)SORT
-//     sort()
-//     {
-//         // if(req.query.sort) 
-//         if(this.queryString.sort) 
-//         {   
-           
-//             const sortBy = this.queryString.sort.split(',').join(' ');
-//             // console.log(sortBy)
-
-//             this.query = this.query.sort(sortBy);
-//             //query = query.sort(sortBy)
-//         }
-//         else 
-//         {
-//             //DEFAULT SORTING : by createdAt Descending order:  NEWEST TOURS ARE DISPLAYED FIRST SINCE THEY HAVE LARGER TIMESTAMP!!
-//             this.query = this.query.sort('-createdAt'); 
-//         }
-
-//         return this;
-
-//     }
-
-//     //3) LIMITING FIELDS
-//     limitFields() 
-//     {
-//          //FEATURE 3:FIELD LIMITING
-//        if(this.query.fields)
-//        {    
-//         //Create an array of strings from the query req.query.fieldss
-//         const fields = this.query.fields.split(',').join(' ')
-
-//         //MONGOOSE EXPECTS FIELDS SEPARATED BY SPACES 
-//         this.query = this.query.select(fields) 
-//        }
-//        else
-//        {
-       
-//          this.query.select('-__v')
-//        }
-
-//        return this;
-
-//     }
-
-//     //4)PAGINATION
-//     paginate()
-//     {
-      
-//        const page = this.queryString.page * 1 || 1 
-//        const limit = this.queryString.limit * 1 || 100
-//        const skip = (page - 1)  * limit; 
-
-//        this.query = this.query.skip(skip).limit(limit);
-  
-//        return this;
-
-      
-//      //DONT NEED ALL THE BELOW CODE!! SINCE I DONT NEED TO THROW AN ERROR WHEN NO RESULTS!! client understand that [] ...
-//        //COMPUTE THE SKIP VALUE - NUMBER OF DOCUMENTS TO BE SKIP
-//        //const skip = (page - 1) * limit;
-//         //    if(this.queryString.page)
-//         //    {
-//         //      const numberOfTours = await Tour.countDocuments(); 
-
-//         //     if(numberOfTours < skip) throw new Error(`This page does not exist`)
-
-//         //    }
-      
-      
-//        //TEST THE REQUEST FOR ONE PAGE WITH 3 RESULTS - OK!
-
-//     }
-    
-// }
-
-
-
-
-
-
 //AFTER REFACTORING TO THE APIFeatures THIS METHOD WILL BE MUCH CLEANER
 //THIS METHOD JUST BUILD THE INSTANCE CONTAINS ALL THE API-FEATURES - BY CONSTRUCTING AN INSTANCE OF APIFeature using Builder 
 exports.getAllTours = async (req,res,next)=>
@@ -289,6 +167,162 @@ exports.deleteTour = async (req,res,next) =>{
         })
     }
 }
+
+
+
+//AGGREGATION PIPELINE IMPLEMENTATION USING MONGOOSE
+exports.getTourStats = async(req,res) =>{
+
+    try 
+    {
+
+        //Tour.aggregate returns a Promise<Aggregation> -I need to await it
+        const stats = await Tour.aggregate(
+
+            [
+                //1)MATCH STAGE: (like filter object in mongo db) 
+                {
+                    $match:
+                    { 
+                        ratingsAverage: {'$gte': 4.5}
+                    }
+                }, 
+                //2)GROUP STAGE:
+                //STEP 1:specify the field id to group by (set to null if I want to group on all docs)
+                {
+                    //TEST : GROUP NON ON A SPECIF FILED 
+                    //_id: null
+                    
+                    $group:
+                    {
+                        //GROUP ON THE DIFFICULTY - TO LISTS OF DOCS CATEGORIZED BY DIFFICULTY: LIST OF EASY TOURS, MED TOURS
+                        _id: {$toUpper: '$difficulty'}, 
+                        //FOR EACH OF THE DOCS THAT GOES THROUGH THIS PIPE-LINE - ADD 1 to the sum
+                        num: {$sum: 1},
+                        //FOR EACH OF THE DOCS THAT GOES THROUGH THIS PIPE-LINE - ADD IT'S ratingsQuantity value to the sum
+                        //=> DATA SCIENCE: THE MOST DIFFICU
+                        numRatings: {$sum: 'ratingsQuantity' },
+                        avgRating: { $avg: '$ratingsAverage'}, 
+                        avgPrice: {$avg: '$price'}, 
+                        minPrice: {$min: '$price'} ,
+                        maxPrice: {$max: '$price'}, 
+
+                    }
+                }, 
+                //SORT STAGE - sort by avgPrice - ascending (field of last resultset!)
+                {
+                    $sort: {avgPrice: 1}
+                },
+                //TEST : REPEAT STAGE: match - EXCLUDE ALL EASY TOURS
+                // {
+                //     $match:{ _id: {$ne: 'EASY'}}
+                // }
+
+            
+            ]
+        )
+
+            res.status(200).json({
+            status:'success', 
+            data:{
+                stats
+            }
+        })
+
+    }
+    catch(err)
+    {
+        res.status(404).json({
+            status:'fail', 
+            message:err.message
+        
+        })
+
+    }
+}
+
+
+    exports.getMonthlyPlan = async (req,res) =>{
+        try 
+        {
+            //TRANSFORM TO NUMBER
+            
+            console.log(req.params.year);
+            const year = req.params.year * 1;
+            console.log(year)
+            const plan = await Tour.aggregate(
+            [
+            //STAGE 1: UNWIND STAGE: EXTRACT ONE TOUR FOR EACH DATE IN THE startDates array input
+            //TEST: OK one tour for each date - instead of a tour contains an array of dates!
+            //STAGE: 2: MATCH: SELECT ALL TOURS WITH THE GIVEN YEAR QUERY SEARCH
+            //FIND ALL TOURS WITH STARTS DATE d: 01.01.year < d < 01.01.year
+             {
+             $unwind: '$startDates'
+             },
+             {
+                $match:
+                {
+                    startDates: 
+                    {
+                        $gte: new Date(`${year}-01-01`), 
+                        $lte: new Date(`${year}-12-31`)
+                    }
+                }
+             },
+             //STAGE 2: STAGE GROUP STAGE:group by the month
+             // $month(HOW TO EXTRACT THE MONTH FROM THE)
+             //SOLUTION: MONGODB AGGRAGATION  PIPELINE OPERATORS(not stages) :
+             //startDates is the field I want to extract the date from 
+             //(using mongodb aggragatoin pipeline $month )
+             //COUNT #tours starts on the same date(like with the difficulty before)
+             
+             {
+                $group: {
+                    _id:  { $month: '$startDates'}, 
+                     numTourStarts: { $sum: 1} ,
+                     //CREATE AN ARRAY TO GET ALSO THE TOUR ITSELF IN THE RESULT SET 
+                     tours: {$push: '$name'}
+                }
+             }, 
+             //STAGE 3: addFields: add the field 'month' with the _id value(1,2,3,,,12)
+             {
+                $addFields:{ month: '$_id'}
+             },
+             //STAGE 4: PROJECT STAGE - GET RID OF THE _id in the output
+             {
+                $project:{ 
+                    _id: 0
+                }
+             }, 
+             //STAGE 5: SORT STAGE - SORT BY #TOURS STARTS - DESCENDING
+             {
+                $sort: {numTourStarts: -1}
+             }, 
+             //STAGE 6: LIMIT STAGE(similar to the limit in the Query) - GET THE FIRST 6 DOCS!
+             {
+                $limit: 6
+             }
+
+         ]
+         )
+
+            res.status(200).json({
+            status:'success', 
+            data:{
+                plan
+            }
+        })
+
+        }
+        catch(err)
+        {
+            res.status(404).json({
+            status:'fail', 
+            message:err.message
+        
+        })
+        }
+    }
 
 
 
