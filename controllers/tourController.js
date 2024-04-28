@@ -1,12 +1,18 @@
-const { query } = require('express')
 const Tour = require('../models/Tour')
+const APIFeatures = require('../utils/apiFeatures')
 
 
-//ALIAS M.W - WILL BE EXECUTED BEFORE THE getAllTours() THAT CONTAINS ALL API FEATURES
+
+////////////////////////////////////////////////////////////////////////////////////
+//ROUTE ALIAS - POPULAR ROUTE - NOT PART OF THE API FEATURES(below)
+//STEP 1: TEST THE NON FRIENDLY URL FIRST: http://localhost:3000/natours/api/v1/tours?limit=5&sort=-ratingsAverage,price
+//STEP 2: BASED ON THIS URL - USE M.W TO PRE-POPULATE THE SEARCH QUERY VALUES (req.query ..)
+//STEP 3: CREATE A NEW GET ROUTE BY ADDING THE M.W BEFORE THE getAllTours() handler: 
+//      tourRouter.get('/top-5-cheap',tourController.aliasTopTours, tourController.getAllTours)
+//STEP 4: TEST POSTMAN: http://localhost:3000/natours/api/v1/tours/top-5-cheap
+
 exports.aliasTopTours = (req,res,next) =>{
 
-    //POPULATE  req.query object based on url:
-    //http://localhost:3000/natours/api/v1/tours?limit=5&sort=-averageRatings,price
 
     //SET TO STRING !
     req.query.limit = '5'
@@ -14,105 +20,150 @@ exports.aliasTopTours = (req,res,next) =>{
     //IMPORTANT - POPULATE SOME  FIELDS - SO IN THE NEXT M.W(findAllTours) WILL USE THE LIMING FIELDS(PROJECTION) 
     req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
 
+    console.log('aliasTopTours:')
+    console.log(req.query)
     next(); 
     
 }
 
 
-exports.getAllTours = async (req,res,next)=>{
-
-    try 
-    {
-        //FEATURE 1.A) Filtering
-        ///BUILD THE QUERY(before executing it)
-        const queryObj = {...req.query};
-        const excludedFields = ['page', 'sort', 'limit', 'fields']
-        excludedFields.forEach(el => delete queryObj[el])
+/**Reusable class contains all API FEATURES - to be used by all resources
+ * THIS CAN BE DONE BY INJECTING THE Mongoose.Query object in the constructor class 
+ * instead of quering for the Tour inside the class - and therefore bound it to the Tour resource
+//NOTE: 
+//query is Mongoose Query object, 
+//queryString : req.query object from express
+ */
+// class APIFeatures{
+//     constructor(query, queryString)
+//     {
+//         this.query = query ; 
+//         this.queryString = queryString;
+//     }
+    
+//     //API-FEATURE 1: FILTERING 
+//     //FEATURE 1.A) Filtering
+//     //BEFORE REFACTORING TO THIS CLASS
+//      //let query = this.query.find(JSON.parse(queryStr))
+//     filter()
+//     {
         
-        console.log(req.query,  queryObj);
-
-
-        
-
-        //FEATURE 1.B : ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
-        let queryStr = JSON.stringify(queryObj)
-
-        queryStr =queryStr.replace(/\b(lte|lt|gte|gt)\b/g,match => `$${match}`)
-        //Query Object: { duration: { gte: '5' } } { duration: { gte: '5' } }
-        // => OK Filter Object{ duration: { '$gte': '5' } } - this is the Filter Object  I want to pass to Mongoose query!
-        //console.log(JSON.parse(queryStr))
-
-        
-        ///Returns a Query - and store the query - dont await it! just store it - only as the last step await it to execute the query 
-         let query = Tour.find(JSON.parse(queryStr))
-        ///FEATURE 2: SORTING
-        if(req.query.sort) 
-        {   //SORT BY 2 CRITERIA :http://localhost:3000/natours/api/v1/tours?sort=price ratingsAverage
-            //SEPARATE THE QUERY STRINGS BY COMMA -> SPLIT: to get AN ARRAY OF ALL FIELDS NAME IN THE URL - AND THEN JOING THEM TOGETHER TO ONE STRING
-            const sortBy = req.query.sort.split(',').join(' ');
-            console.log(sortBy)
-            //FOR THE URL : http://localhost:3000/natours/api/v1/tours?sort=price
-            //=>MONGOOSE WILL SORT the result based on the price field
-            query = query.sort(sortBy)
-        }
-        else 
-        {
-            //DEFAULT SORTING : by createdAt Descending order:  NEWEST TOURS ARE DISPLAYED FIRST SINCE THEY HAVE LARGER TIMESTAMP!!
-            query = query.sort('-createdAt'); 
-        }
-
-
-        //FEATURE 3:FIELD LIMITING
-       if(req.query.fields)
-       {    
-        //Create an array of strings from the query req.query.fieldss
-        const fields = req.query.fields.split(',').join(' ')
-
-        //MONGOOSE EXPECTS FIELDS SEPARATED BY SPACES 
-        query = query.select(fields) 
-       }
-       else
-       {
-        //DEFAULT IF USER DOES NOT SPEICFY THE FIELDS
-        // EXCLUDE (DONT DISABLE) THE ANNOYING MONGODB FIELD FROM THE RESPONSE
-         query.select('-__v')
-       }
-
-
-       ////////////////////////////////////
-       //FEATURE 4: PAGINATION 
-       ////////////////////
-
-       // page=2&limit=10  => User want page 2 with 10 results per page 
-       //=> 1-10 on page 1, 11-20 on page 2 
+//         const queryObj = {...this.queryString};
+//         const excludedFields = ['page', 'sort', 'limit', 'fields']
        
-       //READ THE QUERY STRINGS FROM THE REQUEST , CONVERT TO NUMBER-
-       //IF NO QUERY STRINGS - THEN DEFINED DEFAULTS1
-       const page = req.query.page * 1 || 1 
-       const limit = req.query.limit * 1 || 100
+//         excludedFields.forEach(el => delete queryObj[el])
+        
+//        // console.log(this.query,  queryObj);
+
+
+//         //FEATURE 1.B : ADVANCED FILTERING - QUERY OPERATORS : replace for ALL EXACT MATCHES OF  gt,lt,lte,gte
+//         let queryStr = JSON.stringify(queryObj)
+//         queryStr =queryStr.replace(/\b(lte|lt|gte|gt)\b/g,match => `$${match}`)
+        
+
+//         //UPDATE THE query instance property to the query parameter
+//         this.query = this.query.find(JSON.parse(queryStr))
+
+//         return this;
+//     }
+       
+
+//     //2)SORT
+//     sort()
+//     {
+//         // if(req.query.sort) 
+//         if(this.queryString.sort) 
+//         {   
+           
+//             const sortBy = this.queryString.sort.split(',').join(' ');
+//             // console.log(sortBy)
+
+//             this.query = this.query.sort(sortBy);
+//             //query = query.sort(sortBy)
+//         }
+//         else 
+//         {
+//             //DEFAULT SORTING : by createdAt Descending order:  NEWEST TOURS ARE DISPLAYED FIRST SINCE THEY HAVE LARGER TIMESTAMP!!
+//             this.query = this.query.sort('-createdAt'); 
+//         }
+
+//         return this;
+
+//     }
+
+//     //3) LIMITING FIELDS
+//     limitFields() 
+//     {
+//          //FEATURE 3:FIELD LIMITING
+//        if(this.query.fields)
+//        {    
+//         //Create an array of strings from the query req.query.fieldss
+//         const fields = this.query.fields.split(',').join(' ')
+
+//         //MONGOOSE EXPECTS FIELDS SEPARATED BY SPACES 
+//         this.query = this.query.select(fields) 
+//        }
+//        else
+//        {
+       
+//          this.query.select('-__v')
+//        }
+
+//        return this;
+
+//     }
+
+//     //4)PAGINATION
+//     paginate()
+//     {
+      
+//        const page = this.queryString.page * 1 || 1 
+//        const limit = this.queryString.limit * 1 || 100
+//        const skip = (page - 1)  * limit; 
+
+//        this.query = this.query.skip(skip).limit(limit);
+  
+//        return this;
 
       
-       //COMPUTE THE SKIP VALUE - NUMBER OF DOCUMENTS TO BE SKIP
-       const skip = (page - 1) * limit;
+//      //DONT NEED ALL THE BELOW CODE!! SINCE I DONT NEED TO THROW AN ERROR WHEN NO RESULTS!! client understand that [] ...
+//        //COMPUTE THE SKIP VALUE - NUMBER OF DOCUMENTS TO BE SKIP
+//        //const skip = (page - 1) * limit;
+//         //    if(this.queryString.page)
+//         //    {
+//         //      const numberOfTours = await Tour.countDocuments(); 
+
+//         //     if(numberOfTours < skip) throw new Error(`This page does not exist`)
+
+//         //    }
+      
+      
+//        //TEST THE REQUEST FOR ONE PAGE WITH 3 RESULTS - OK!
+
+//     }
+    
+// }
 
 
-       //GOURD CLAUSE - FOR WHEN THE USER SENT THE PAGE QUERY STRING AND THERE ARE NO RESULTS 
-       //DONT RETURN AN EMPTY LIST AS MONGOOSE DOES
-       if(req.query.page)
-       {
-        //COMPUTE NUMBER OF TOURS IN THE COLLECTION
-        const numberOfTours = await Tour.countDocuments(); 
-        console.log(numberOfTours)
-
-        if(numberOfTours < skip) throw new Error(`This page does not exist`)
-
-       }
-       //TEST THE REQUEST FOR ONE PAGE WITH 3 RESULTS - OK!
-       query.skip(skip).limit(limit);
 
 
-        //EXECUTE THE QUERY
-        const tours = await query 
+
+
+//AFTER REFACTORING TO THE APIFeatures THIS METHOD WILL BE MUCH CLEANER
+//THIS METHOD JUST BUILD THE INSTANCE CONTAINS ALL THE API-FEATURES - BY CONSTRUCTING AN INSTANCE OF APIFeature using Builder 
+exports.getAllTours = async (req,res,next)=>
+{
+    try 
+    {
+    //EXECUTE QUERY
+    const features = new APIFeatures(Tour.find(), req.query)
+        .filter()
+        .sort()
+        .paginate();
+       
+
+    //NOTE: ALL THE CHAINS QUERY ARE STORED IN THE features.query
+    const tours = await features.query;
 
     
         //SEND RESPONSE
