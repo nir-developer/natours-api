@@ -41,6 +41,7 @@ exports.getAllTours = async (req,res,next)=>
        
 
     //NOTE: ALL THE CHAINS QUERY ARE STORED IN THE features.query
+    //IMPORTANT !! IF THERE ARE PRE-FIND M.W - THEY WILL BE EXECUTED NOW!! BEFORE THE AWAIT (EXECUTING THE QUERY
     const tours = await features.query;
 
     

@@ -66,7 +66,12 @@ const tourSchema = new mongoose.Schema({
         select:false
 
     }, 
-    startDates:[Date]
+    startDates:[Date], 
+    //SECRET TOUR - TO BE FETCHED BY PRE FIND M.W!
+    secretTour: {
+        type:Boolean, 
+        default: false
+    }
 
 },
 //MUST ADD THIS OPTIONS OBJECT TO THE SCHEMA - OTHERWISE V.P WILL NOT BE RETURNED IN THE OUTPUT!!
@@ -105,6 +110,38 @@ tourSchema.pre('save', function(next){
 })
 
 
+//PRE-FIND QUERY M.W 
+//THIS M.W WILL BE EXECUTED RIGHT BEFORE THE API Features :  await Tour.find({}..)
+//this -> current processing Query instance
+//=> THIS IS THE TIME TO CHAIN LOGIC TO THE BASIC LOGIC
+tourSchema.pre(/^find/, async function(next) {
+   
+   
+    const notSecretTours =  this.find({secretTour: {$ne : true}})
+
+  
+    //ADD TO THE current Query object a property (in ms)
+    this.start = Date.now(); 
+
+
+    next();
+    
+
+})
+
+
+//POST FIND M.W 
+tourSchema.post(/^find/, function(docs, next) {
+
+    console.log(`Query took:   ${Date.now() - this.start} ms`)
+
+    next();
+})
+
+const Tour = mongoose.model('Tour' , tourSchema)
+
+
+
 //TESTS PRE M.W AND POST M.W
 // tourSchema.pre('save', function(next){
 //     console.log('IN THE SECOND(LAST) PRE SAVE M.W - going to save')
@@ -118,7 +155,6 @@ tourSchema.pre('save', function(next){
 //     next();
 // })
 
-const Tour = mongoose.model('Tour' , tourSchema)
 
 module.exports = Tour; 
 
