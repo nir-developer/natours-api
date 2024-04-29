@@ -1,15 +1,13 @@
 const Tour = require('../models/Tour')
 const APIFeatures = require('../utils/apiFeatures')
+const catchAsync = require('../utils/catchAsync')
+
+// //CATCH ASYNC(ERROR HANDLING)
+// //DO I HAVE TO PASS next to fn??
+// const catchAsync = fn => (req,res,next) => fn(req,res,next).catch(next)
 
 
 
-////////////////////////////////////////////////////////////////////////////////////
-//ROUTE ALIAS - POPULAR ROUTE - NOT PART OF THE API FEATURES(below)
-//STEP 1: TEST THE NON FRIENDLY URL FIRST: http://localhost:3000/natours/api/v1/tours?limit=5&sort=-ratingsAverage,price
-//STEP 2: BASED ON THIS URL - USE M.W TO PRE-POPULATE THE SEARCH QUERY VALUES (req.query ..)
-//STEP 3: CREATE A NEW GET ROUTE BY ADDING THE M.W BEFORE THE getAllTours() handler: 
-//      tourRouter.get('/top-5-cheap',tourController.aliasTopTours, tourController.getAllTours)
-//STEP 4: TEST POSTMAN: http://localhost:3000/natours/api/v1/tours/top-5-cheap
 
 exports.aliasTopTours = (req,res,next) =>{
 
@@ -26,13 +24,11 @@ exports.aliasTopTours = (req,res,next) =>{
     
 }
 
-
 //AFTER REFACTORING TO THE APIFeatures THIS METHOD WILL BE MUCH CLEANER
 //THIS METHOD JUST BUILD THE INSTANCE CONTAINS ALL THE API-FEATURES - BY CONSTRUCTING AN INSTANCE OF APIFeature using Builder 
-exports.getAllTours = async (req,res,next)=>
+exports.getAllTours =  catchAsync(async (req,res,next)=>
 {
-    try 
-    {
+ 
     //EXECUTE QUERY
     const features = new APIFeatures(Tour.find(), req.query)
         .filter()
@@ -53,51 +49,29 @@ exports.getAllTours = async (req,res,next)=>
                 tours
             }
         })
-    }
-    catch(err)
-    {
-        res.status(404).json({
-            status:'fail',
-             message:err.message
-            })
-    }
-}
-
-
-
-exports.createTour = async (req,res,next) =>{
-   try 
-   {
-    //CREATE:(STATIC)
-    //create: execute 2 ops at once: create and save 
-    //(can be used to create and save one or more docs)
-    //
-    const tour = await Tour.create(req.body)
     
-
-       res.status(201).json({
-        status:'success', 
-        data:{
-            tour
-        }
-       })
-
-   }
-   catch(err)
-   {
-        res.status(400).json({status:'fail', message:`${err.message}`})
-   }
-     
 }
 
+)
 
-exports.findTour = async (req,res,next) =>{
-    try 
-    {
+exports.createTour = catchAsync(async (req,res,next) =>{
+
+     const newTour = await Tour.create(req.body); 
+
+     res.status(201).json({
+        status:'success',
+        data:{
+            tour:newTour
+        }
+          
+     })
+})
+
+
+exports.findTour = catchAsync(async (req,res,next) =>{
+    
        //MONGOOSE:  Tour.findById(req.params.id): shorthand of Tour.findOne({_id: req.params.id})
         const tour = await Tour.findById(req.params.id) ;
-        // let tour = new Tour({name:'x'})
-        //  tour = await tour.save(tour);
 
         if(!tour) throw new Error(`tour with id ${req.params.id} not found`)
 
@@ -108,80 +82,51 @@ exports.findTour = async (req,res,next) =>{
             }
         })
 
-    }
-    catch(err)
-    {
-        res.status(404).json({
-            status:'fail', 
-            message:err.message
+  
+})
+
+exports.updateTour = catchAsync( async (req,res,next) =>{
+    
+    const tour = await Tour.findById(req.params.id)
+    res.status(200).json({
+        status:'success', 
+        data:{
+            tour
+        }
+    })
+    
+    
+      
+            //WILL NOT TRIGGER THE PRE-SAVE M.W!(only .save() and .create() !)
+            // const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, 
+            //     {
+            //         new:true, 
+            //         runValidators:true
+            //     }) 
+        //MONGO DB SYNTAX
+        //Tour.findOne({_id:" req.params.id}"})
         
-        })
-    }
-}
-
-exports.updateTour = async (req,res,next) =>{
-
-    try 
-    {
-       
-        //WILL NOT TRIGGER THE PRE-SAVE M.W!(only .save() and .create() !)
-        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, 
-            {
-                new:true, 
-                runValidators:true
-            }) 
-
-        
+        //NOTE HERE!! ERROR HANDLING!
         //if(!tour) throw new Error()
 
+   
+})
 
-        res.status(200).json({
-            status:'success', 
-            data:{
-                tour
-            }
-        })
-    }
-    catch(err)
-    {
-        res.status(400).json({
-            status:'fail', 
-            message:err
-        })
-    }
-}
 
-exports.deleteTour = async (req,res,next) =>{
-    try 
-    {
-        const id = await Tour.findByIdAndDelete(req.params.id)
+exports.deleteTour =  catchAsync(async(req,res,next) =>{
 
-        console.log('DELETED TOUR WITH ID: ', id)
+    await Tour.findByIdAndDelete(req.params.id)
 
-        res.status(204).json({
-            status:'success', 
-            data:{
-                id
-            }
-        })
-
-    }
-    catch(err)
-    {
-        res.status(400).json({
-            status:'fail', 
-            message:err
-        })
-    }
-}
+    res.status(204).json({
+        status:'success', 
+    })
+})
 
 
 
 //AGGREGATION PIPELINE IMPLEMENTATION USING MONGOOSE
-exports.getTourStats = async(req,res) =>{
+exports.getTourStats =catchAsync( async(req,res,next) =>{
 
-    try 
-    {
 
         //Tour.aggregate returns a Promise<Aggregation> -I need to await it
         const stats = await Tour.aggregate(
@@ -235,23 +180,11 @@ exports.getTourStats = async(req,res) =>{
                 stats
             }
         })
-
-    }
-    catch(err)
-    {
-        res.status(404).json({
-            status:'fail', 
-            message:err.message
-        
-        })
-
-    }
-}
+})
 
 
-    exports.getMonthlyPlan = async (req,res) =>{
-        try 
-        {
+exports.getMonthlyPlan = catchAsync(async (req,res,next) =>{
+
             //TRANSFORM TO NUMBER
             
             console.log(req.params.year);
@@ -320,16 +253,8 @@ exports.getTourStats = async(req,res) =>{
             }
         })
 
-        }
-        catch(err)
-        {
-            res.status(404).json({
-            status:'fail', 
-            message:err.message
-        
-        })
-        }
-    }
+    
+    })
 
 
 
@@ -391,3 +316,11 @@ exports.getTourStats = async(req,res) =>{
                 DELETE RESOURCE: res.json() - will not return a content- only status code 204!
 
  */
+
+                ////////////////////////////////////////////////////////////////////////////////////
+//ROUTE ALIAS - POPULAR ROUTE - NOT PART OF THE API FEATURES(below)
+//STEP 1: TEST THE NON FRIENDLY URL FIRST: http://localhost:3000/natours/api/v1/tours?limit=5&sort=-ratingsAverage,price
+//STEP 2: BASED ON THIS URL - USE M.W TO PRE-POPULATE THE SEARCH QUERY VALUES (req.query ..)
+//STEP 3: CREATE A NEW GET ROUTE BY ADDING THE M.W BEFORE THE getAllTours() handler: 
+//      tourRouter.get('/top-5-cheap',tourController.aliasTopTours, tourController.getAllTours)
+//STEP 4: TEST POSTMAN: http://localhost:3000/natours/api/v1/tours/top-5-cheap
