@@ -138,6 +138,24 @@ tourSchema.post(/^find/, function(docs, next) {
     next();
 })
 
+
+//MUCH BETTER TO IMPLEMENT SECRET TOUR HERE IN THE MODEL - THEN IN THE CONTROLLER
+//PRE AGGREGATION M.W - EXCLUDE THE SECRET TOURS FROM THE RESULT SET
+tourSchema.pre('aggregate', function(next) {
+
+    //ADD A NEW FIRST ELEMENT (stage) OF THE PIPELINE ARRAY OF THE CURRENT AGGREGATION
+    this.pipeline().unshift({ $match: { secretTour: {$ne: true}}})
+
+
+    console.log('PRE-AGGREGATE AFTER ADDING A STAGE TO THE PIPE LINE')
+    console.log(this.pipeline())
+    next(); 
+    //REFFERS TO THE CURRENT Aggregate instnce
+    //console.log(this)
+
+    //REMOVE
+})
+
 const Tour = mongoose.model('Tour' , tourSchema)
 
 
