@@ -1,3 +1,6 @@
+//FINALLY : CLI: 
+//node dev-data/data/import-dev-data.js --delete
+
 const dotenv = require('dotenv') 
 dotenv.config({path: './config.env'})
 const mongoose = require('mongoose')

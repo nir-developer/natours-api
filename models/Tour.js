@@ -1,4 +1,8 @@
 const mongoose = require('mongoose')
+const slugify = require('slugify')
+
+
+
 
 const tourSchema = new mongoose.Schema({
     name:{
@@ -7,6 +11,10 @@ const tourSchema = new mongoose.Schema({
         unique:true, 
         trim:true
     }, 
+    //NOTE - I MUST HAVE THIS PROPERTY DEFINED HERE IN THE SCHEMA! 
+    //OTHERWISE THE CODE IN THE PRE-SAVE M.W : this.slug = slugify(this.name...)
+    //WILL NOT PERSIST THE DOC!
+    slug:String, 
     duration:{
         type:Number, 
         required:[true, 'A tour must have a duration']
@@ -60,14 +68,59 @@ const tourSchema = new mongoose.Schema({
     }, 
     startDates:[Date]
 
+},
+//MUST ADD THIS OPTIONS OBJECT TO THE SCHEMA - OTHERWISE V.P WILL NOT BE RETURNED IN THE OUTPUT!!
+{
+    //EACH TIME THE DATA IS OUTPUT  AS JSON - I WANT THE VIRTUAL
+    toJSON: {virtuals:true}, 
+    toObject:{virtuals:true}
 
+}
+
+)
+
+
+
+//VIRTUAL PROPERTIES(not persisted!): Convert #days in db to #weeks in the output!
+//get => Will be called each time something returned from db(getter)
+//REGULAR FUNCTION - NOT ARROW - SINCE THE FUNCTION IS AN INSTANCE METHOD ON THE DOC OBJECT
+tourSchema.virtual('durationWeeks').get(function(){
+    return this.duration / 7; 
 })
 
+
+//IMPORTANT: I MUST HAVE THE slug PROPERTY ON THE SCHEMA DEFINED! OTHERWISE - this.slug = value - WILL NOT BE PERSISTED TO DB! 
+
+//PRE SAVE DOCUMENT M.W : cb  m.w execute  ONLY between calling .save() and .create()
+// [NOT ON insertMany] OR findByIdAndUpdate, findOneAndUpdate() ! SINCE THEY RETURNS QUERY
+//this is the currently processed doc
+// console.log('-----INSIDE PRE SAVE M.W----')
+// console.log(this);- CURRENT DOCUMENT
+//CHECK WHY PRINT ALSO THE V.P??
+tourSchema.pre('save', function(next){
+
+    this.slug = slugify(this.name, {lower: true})
+
+    next();
+})
+
+
+//TESTS PRE M.W AND POST M.W
+// tourSchema.pre('save', function(next){
+//     console.log('IN THE SECOND(LAST) PRE SAVE M.W - going to save')
+//     next();
+// })
+
+// //POST SAVE M.W()  - doc is the final document - 
+// tourSchema.post('save', function(doc, next){
+
+
+//     next();
+// })
 
 const Tour = mongoose.model('Tour' , tourSchema)
 
 module.exports = Tour; 
-
 
 
 /**SUMMARY - TOURS MODELLING

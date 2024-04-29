@@ -67,7 +67,12 @@ exports.getAllTours = async (req,res,next)=>
 exports.createTour = async (req,res,next) =>{
    try 
    {
-       const tour = await Tour.create(req.body)
+    //CREATE:(STATIC)
+    //create: execute 2 ops at once: create and save 
+    //(can be used to create and save one or more docs)
+    //
+    const tour = await Tour.create(req.body)
+    
 
        res.status(201).json({
         status:'success', 
@@ -79,7 +84,7 @@ exports.createTour = async (req,res,next) =>{
    }
    catch(err)
    {
-        res.status(400).json({status:'fail', message:'Invalid data sent!'})
+        res.status(400).json({status:'fail', message:`${err.message}`})
    }
      
 }
@@ -118,6 +123,7 @@ exports.updateTour = async (req,res,next) =>{
     try 
     {
        
+        //WILL NOT TRIGGER THE PRE-SAVE M.W!(only .save() and .create() !)
         const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, 
             {
                 new:true, 
