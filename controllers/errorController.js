@@ -1,6 +1,7 @@
 const AppError = require('../utils/appError')
 
 
+//INVALID MONGODB ID(THROWN BY MONGOOSE!NOT DRIVER!)
 //path: name of the input field with the invalid value
 const handleCastErrorDB = err => {
 
@@ -9,6 +10,24 @@ const handleCastErrorDB = err => {
 
     return  new AppError(message, 400)
 }
+
+
+
+//DUPLICATE FILED (THROWN BY MONGODB DRIVER! NOT MONGOOSE)
+//THE MESSAGE MONGODB DRIVER RETURNS: 
+// "message": "E11000 duplicate key error collection: natours.tours index: name_1 dup key: { name: \"The Snow Adventurer\" }",
+//EXTRACT THE FIELD VALUE FROM THE MESSAGE  BY REG EX!
+const handleDuplicateFieldDB = err => {
+
+
+  const value = err.message.match(/(["'])(?:\\.|[^\\])*?\1/)[0]
+  console.log(value)
+
+  const message = `Duplicate field value: ${value}. Please use another value!`
+  return new AppError(message, 400)
+}
+
+
 
 
 //DEV: I DONT DISTINGUISH BETWEEN OPERATIONAL AND PROGRAMMING - THIS IS FORM ME! 
@@ -69,20 +88,43 @@ module.exports = (err,req,res,next) =>{
      // })
     }
     //MORE IMPORTANT (complex)
+    //SUPER IMPORTANT!!
+           //let error = {...err};
+           //MUST ADD THE name and message property - since they are not on the copy object !!!
+          /** COPY OBJECT RETURNED BY DESTRUCTURING - DOES NOT PRESERVE SOME PROPERTIES OF ORIGINAL ONE!!
+           * let error = { ...err };
+            console.log(`error.code of copy object = ${error.code}`)
+           console.log(`error.name of copy object = ${error.name}`)
+            console.log(`error.message of copy object = ${error.message}`)
+           * error.code of copy object = 11000
+            error.name of copy object = undefined
+            error.message of copy object = undefined
+           */
+
     else if(process.env.NODE_ENV=== 'production')
     {
-        //CREATE HARD COPY OF THE err parameter
-        let error = {...err};
+     
+         //WRONG WAY READ ABOVE!!  :JONAS 
+         //let error = {...err}
 
-        //err is created by Mongoose - I will mark it by generating my AppError(which has isOperational = true by default)
-        if(err.name === 'CastError')
-        {
+          //CORRECT WAY!! 
+          let error = {...err, name:err.name, message:err.message, errors:err.errors}
+            
+          
+          if(error.name === 'CastError') error = handleCastErrorDB(error); 
+          
+           //duplicate error is thrown by MongodDriver(not by Mongoose )-> it does not have the error.name 
+          if(error.code === 11000) error = handleDuplicateFieldDB(error)
 
-            error = handleCastErrorDB(error)
 
-            console.log(error)
-        }
+
+          //Handle Mongoose Validation Error
+          if(error.name === 'ValidationError') error = handleValidationErrorDB(error)
+
+
         
+        
+       
         
         sendErrorProd(error,res)
         
