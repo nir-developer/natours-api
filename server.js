@@ -6,28 +6,25 @@ const app = require('./app')
 
 
 
+//START LISTEN TO  UNCAUGHT EXCEPTIONS (SYNC CODE) RIGHT HERE ON THE TOP 
+// to take effect for the rest of the app
+//NOTE: the server paramter is not needed for handling SYNC errors(like with ASYNC CODE AS IN THE BOTTOM OF THE PAGE!
+//THIS SYNC ERRORS WILL BE THROWN EVEN BEFORE MY APP STARTED(ASYNC..)
+process.on('uncaughtException', err => {
+     console.log('UNCAUGHT EXCEPTION! * HUTTING DOWN....')
+     console.log(err)
+
+    //TERMINATE GRACUFULLY 
+    server.close(() => {
+     
+        process.exit(1); 
+    }); 
+    
+})
 
 //SELECT ENVIRONMENT VARIABLE!!
-const setEnvironment = (environmentName = 'development') =>{
-    if(environmentName !== 'development' && environmentName !== 'test' && environmentName !== 'production') throw new Error('Invalid Environment Name')
-   
-    if(environmentName === 'test')
-        process.env.NODE_ENV = 'test'
-     
-     else if(environmentName === 'development')
-        process.env.NODE_ENV ='development' 
-    else if(environmentName === 'production')
-        process.env.NODE_ENV = 'production'
-   
-}
 
-const setDatabase = () =>{
-    const environment = process.env.NODE_ENV; 
-    if(!environment) throw new Error(`Can not set database - NO ENVIRONMENT WITH THE NAME ${environment}`)
 
-    if(environment === 'test' ) process.env.DB = process.env.DB_COMPASS; 
-    else if(environment === 'development') process.env.DB =process.env.DB_ATLAS;
-}
 
 
 // setEnvironment()
@@ -38,17 +35,45 @@ const PORT = process.env.PORT || 3000;
 // const DB = process.env.DB;
 const DB = process.env.DB_COMPASS;
 
+const server = app.listen(PORT, () =>{ 
+    console.log(`NATOURS API RUNS ON  http://localhost:${PORT}/natours/api/v1/`)
+})
 
 
 mongoose.connect(DB) 
 .then(()=> {
     console.log(`CONNECTING TO DB: ${DB}`)
-    app.listen(PORT, () => console.log(`Natours API listening on port  ${PORT} in ${process.env.NODE_ENV} mode`))
+    //app.listen(PORT, () => console.log(`Natours API listening on port  ${PORT} in ${process.env.NODE_ENV} mode`))
 
 })
-.catch(err => {
-    console.log(`FAILED TO CONNECT TO DB: ${DB}`)
+//REMOVE THIS LOCAL PROMISE REJECTION HANDLING - LIVE IT TO THE GLOBAL BELOW
+// .catch(err => {
+//     console.log(`FAILED TO CONNECT TO DB: ${DB}`)
+// })
+
+
+//GLOBAL - HANDLING UNHANDLED REJECTIONS(Here the server is required - since I want to handle ASYNC ERRORS!)
+process.on('unhandledRejection', err => {
+ console.log('UNHANDLED REJECTIONS! * HUTTING DOWN....')
+     console.log(err)
+    //SHUT DOWN THE APPLICATION - (GRACEFULLY) 
+    //GRACEFULLY: (server.close()) : LET SERVER  FINISH HANDLING ALL PENDING REQUEST
+    server.close(() => {
+     //SINCE NO DB CONNECTION 
+        //NOTE: STATUS CODE 1: UNCAUGHT EXCEPTIONS!
+        //SHUT DOWN THE SERVER ONLY NOW - AFTER GRACEFULLY CLOSE THE SERVER
+        process.exit(1); 
+    }); 
 })
+
+
+
+
+
+
+//MAKE NODE THROW AN EXCEPTION
+// console.log(xx)
+
 
 
 
