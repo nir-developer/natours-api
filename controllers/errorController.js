@@ -1,3 +1,16 @@
+const AppError = require('../utils/appError')
+
+
+//path: name of the input field with the invalid value
+const handleCastErrorDB = err => {
+
+    //CONSTRUCT A MESSAGE BASED ON THE PATH AND VALUE IN THE ERROR MONGO THROW
+    const message = `Invalid ${err.path}: ${err.value}`
+
+    return  new AppError(message, 400)
+}
+
+
 //DEV: I DONT DISTINGUISH BETWEEN OPERATIONAL AND PROGRAMMING - THIS IS FORM ME! 
 //( I WANT SEE ALL DETAILS IN BOTH 2 ENVIRONMENTS)
 const sendErrorDev = (err,res) =>{
@@ -55,13 +68,27 @@ module.exports = (err,req,res,next) =>{
         // stack:err.stack
      // })
     }
+    //MORE IMPORTANT (complex)
     else if(process.env.NODE_ENV=== 'production')
     {
+        //CREATE HARD COPY OF THE err parameter
+        let error = {...err};
+
+        //err is created by Mongoose - I will mark it by generating my AppError(which has isOperational = true by default)
+        if(err.name === 'CastError')
+        {
+
+            error = handleCastErrorDB(error)
+
+            console.log(error)
+        }
+        
+        
+        sendErrorProd(error,res)
+        
+        
+        
         //EXTRACT THIS CODE TO sendErrorProd
-        sendErrorProd(err,res)
-
-
-
         // res.status(err.statusCode).json({
         //     status:err.status,
         //     message:err.message
