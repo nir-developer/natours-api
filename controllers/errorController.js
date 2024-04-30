@@ -17,9 +17,7 @@ const handleCastErrorDB = err => {
 //THE MESSAGE MONGODB DRIVER RETURNS: 
 // "message": "E11000 duplicate key error collection: natours.tours index: name_1 dup key: { name: \"The Snow Adventurer\" }",
 //EXTRACT THE FIELD VALUE FROM THE MESSAGE  BY REG EX!
-const handleDuplicateFieldDB = err => {
-
-
+const handleDuplicateFieldsDB = err => {
   const value = err.message.match(/(["'])(?:\\.|[^\\])*?\1/)[0]
   console.log(value)
 
@@ -27,6 +25,22 @@ const handleDuplicateFieldDB = err => {
   return new AppError(message, 400)
 }
 
+
+
+const handleValidationErrorDB = err => {
+
+    //EXTRACT AN ARRAY OF ALL VALUES : LOOP OVER THE err.errors  OBJECT  CREATED BY MONGOOSE 
+    //PROPERTIES(elements) AND TAKE THE VALUES
+    const errors = Object.values(err.errors).map(el => el.message)
+
+    
+    //errors is an array of strings 
+    const message = errors.join('. ')
+    
+
+
+    return new AppError(message, 400)
+}
 
 
 
@@ -114,17 +128,12 @@ module.exports = (err,req,res,next) =>{
           if(error.name === 'CastError') error = handleCastErrorDB(error); 
           
            //duplicate error is thrown by MongodDriver(not by Mongoose )-> it does not have the error.name 
-          if(error.code === 11000) error = handleDuplicateFieldDB(error)
+          if(error.code === 11000) error = handleDuplicateFieldsDB(error)
 
-
-
-          //Handle Mongoose Validation Error
+          //Handle Mongoose Validation Errors(Mongoose put them in an array!(spring like..))
           if(error.name === 'ValidationError') error = handleValidationErrorDB(error)
 
 
-        
-        
-       
         
         sendErrorProd(error,res)
         
