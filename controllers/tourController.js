@@ -1,5 +1,6 @@
 const Tour = require('../models/Tour')
 const APIFeatures = require('../utils/apiFeatures')
+const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
 
 // //CATCH ASYNC(ERROR HANDLING)
@@ -73,14 +74,20 @@ exports.findTour = catchAsync(async (req,res,next) =>{
        //MONGOOSE:  Tour.findById(req.params.id): shorthand of Tour.findOne({_id: req.params.id})
         const tour = await Tour.findById(req.params.id) ;
 
-        if(!tour) throw new Error(`tour with id ${req.params.id} not found`)
+        if(!tour) 
+        return next( new AppError('No tour found with that ID', 404))
+    
+    
+    res.status(200).json({
+        status:'success', 
+        data:{
+            tour
+        }
+    })
 
-        res.status(200).json({
-            status:'success', 
-            data:{
-                tour
-            }
-        })
+
+    //if(!tour) throw new Error(`tour with id ${req.params.id} not found`)
+    //USE MY CUSTOMER ERROR CLASS - AND PASS TO EXPRESS M.W TO RETURN THE ERROR RESPONSE
 
   
 })
@@ -88,8 +95,12 @@ exports.findTour = catchAsync(async (req,res,next) =>{
 exports.updateTour = catchAsync( async (req,res,next) =>{
     
     const tour = await Tour.findById(req.params.id)
+
+    if(!tour) 
+        return next( new AppError('No tour found with that ID', 404))
+    
     res.status(200).json({
-        status:'success', 
+    status:'success', 
         data:{
             tour
         }
@@ -115,7 +126,11 @@ exports.updateTour = catchAsync( async (req,res,next) =>{
 
 exports.deleteTour =  catchAsync(async(req,res,next) =>{
 
-    await Tour.findByIdAndDelete(req.params.id)
+   const tour =  await Tour.findByIdAndDelete(req.params.id)
+
+   if(!tour) 
+    return next( new AppError('No tour found with that ID', 404))
+
 
     res.status(204).json({
         status:'success', 
