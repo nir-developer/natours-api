@@ -48,6 +48,7 @@ const handleValidationErrorDB = err => {
 //( I WANT SEE ALL DETAILS IN BOTH 2 ENVIRONMENTS)
 const sendErrorDev = (err,res) =>{
    
+    console.log(err.stack)
     res.status(err.statusCode).json({
         status: err.status,
         message:err.message, 

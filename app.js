@@ -1,7 +1,7 @@
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
 const tourRouter = require('./routes/tourRoutes')
-
+const userRouter = require('./routes/userRoutes')
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
@@ -19,9 +19,12 @@ app.use(bodyParser.urlencoded({extended:false}))
 //END POINTS 
 app.use('/natours/api/v1/tours', tourRouter)
 
+app.use('/natours/api/v1/users', userRouter)
 
-app.get('/natours/api/v1/test', (req,res,next) =>{
-    res.status(200).json({message:'GET HOME - OK'})
+
+app.get('/natours/api/v1/', (req,res,next) =>{
+    
+    // res.status(200).json({'Time on the server': new Date()})
 })
 
 
