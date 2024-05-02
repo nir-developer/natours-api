@@ -14,14 +14,17 @@ process.on('uncaughtException', err => {
      console.log('UNCAUGHT EXCEPTION! * HUTTING DOWN....')
      console.log(err)
 
+     process.exit(1); 
+
     //TERMINATE GRACUFULLY 
-    server.close(() => {
+    // server.close(() => {
      
-        process.exit(1); 
-    }); 
+    // }); 
     
 })
 
+
+// console.log(x)
 //SELECT ENVIRONMENT VARIABLE!!
 
 
@@ -54,11 +57,14 @@ mongoose.connect(DB)
 
 //GLOBAL - HANDLING UNHANDLED REJECTIONS(Here the server is required - since I want to handle ASYNC ERRORS!)
 process.on('unhandledRejection', err => {
- console.log('UNHANDLED REJECTIONS! * HUTTING DOWN....')
-     console.log(err)
+    // console.log('UNHANDLED REJECTIONS! * HUTTING DOWN....')
+    //  console.log(err)
+     
     //SHUT DOWN THE APPLICATION - (GRACEFULLY) 
     //GRACEFULLY: (server.close()) : LET SERVER  FINISH HANDLING ALL PENDING REQUEST
     server.close(() => {
+         console.log('UNHANDLED REJECTIONS! * HUTTING DOWN....')
+        console.log(err)
      //SINCE NO DB CONNECTION 
         //NOTE: STATUS CODE 1: UNCAUGHT EXCEPTIONS!
         //SHUT DOWN THE SERVER ONLY NOW - AFTER GRACEFULLY CLOSE THE SERVER
