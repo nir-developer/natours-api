@@ -62,6 +62,17 @@ userSchema.pre('save',async function(next){
 })
 
 
+//INSTANCE METHOD  - OK !
+userSchema.methods.correctPassword = async (candidatePassword, userPassword) => {
+    return await bcrypt.compare(candidatePassword, userPassword)
+}
+
+
+//STATIC METHOD - OK
+// userSchema.statics.verifyPassword = async  (candidatePassword, userPassword) =>{
+//     console.log('INSIDE STATIC')
+//     return await bcrypt.compare(candidatePassword, userPassword);
+// }
 const User = mongoose.model('User', userSchema)
 
 module.exports = User;
