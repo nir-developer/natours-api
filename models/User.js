@@ -37,8 +37,9 @@ const userSchema = new mongoose.Schema({
             },
             message:'Password are not the same'
         }
-     }
-
+     }, 
+     //FOR STEP 4 IN THE IMPLEMENTAION OF PROTECTED ROUTES
+     passwordChangedAt: Date
 })
 
 
@@ -65,6 +66,35 @@ userSchema.pre('save',async function(next){
 //INSTANCE METHOD  - OK !
 userSchema.methods.correctPassword = async (candidatePassword, userPassword) => {
     return await bcrypt.compare(candidatePassword, userPassword)
+}
+
+
+//INSTANCE METHOD - TO BE USED IN THE LAST STEP(STEP 4) OF PROTECTING ROUTES -  THE PROTECT FUNCTION 
+//year-month-day 
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp)
+{
+
+    if(this.passwordChangedAt)
+    {
+        const changedTimestamp = Number.parseInt(this.passwordChangedAt  / 1000);
+
+        console.log(changedTimestamp, JWTTimestamp)
+        console.log(`PASSWORD CHANGED AFTER JWT ISSUED? ${changedTimestamp > JWTTimestamp}`)
+        return changedTimestamp > JWTTimestamp;
+     //   return  this.passwordChangedAt.getTime() > Number.parseInt(JWTTimestamp  * 1000);
+        ///TESTS: OK!!!
+        // const isNew = this.passwordChangedAt.getTime() > Number.parseInt(JWTTimestamp  * 1000);
+        // console.log(this.passwordChangedAt.getTime(), Number.parseInt(JWTTimestamp  * 1000))
+        // console.log(`DID USER CHANGED PASSWORD AFTER JWT ISSUED? ${isNew}`)
+        // return isNew
+
+    }
+
+    
+
+
+    //THE NORMAL CASE(MOST USERS NEVER CHANGE THEIR PASSWORDS...)
+    return false;
 }
 
 

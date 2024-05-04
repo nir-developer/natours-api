@@ -29,8 +29,6 @@ exports.createUser = catchAsync(async (req,res,next) =>{
         passwordConfirm: req.body.passwordConfirm
     })
 
-
-
     res.status(201).json({
         status:'success', 
         data:
@@ -39,4 +37,30 @@ exports.createUser = catchAsync(async (req,res,next) =>{
         }
     })
 
+})
+
+
+exports.updateUser = catchAsync(async(req,res,next) =>{
+
+    //Dont accept any other field from request than the below! 
+    const updatedData = {
+        name: req.body.name, 
+        email: req.body.email, 
+        //REMOVE THIS LATAR!should be updated automatically 
+        passwordChangedAt: req.body.passwordChangedAt
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, updatedData, {new:true, runValidators:true})
+
+    console.log('UPDATE USER: the updated user in db:')
+    console.log(updatedUser)
+
+    res.status(200).json({
+        status:'success', 
+        data:{
+            user:updatedUser
+        }
+    })
+    //6636149d9deae7e667ddb6b6
+    // const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body)
 })

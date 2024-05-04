@@ -4,6 +4,8 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync')
 
 
+const {promisify} = require('util')
+
 const jwt = require('jsonwebtoken')
 
 
@@ -89,11 +91,35 @@ exports.protect = catchAsync(async (req,res,next) =>{
     
     if(!token) return next(new AppError('You are not logged in! Please log in to get access.', 401))
  
+    //2)jwt.verify Verify the token(THIS VERIFICATION STEP - MAKES SURE NO TEMPER AND NO EXPIRATION)
+    //=> AFTER THIS STEP - I CAN BE SURE THAT THE ID IN THE PAYLOAD OF THE PROVIDED JWT IS THE ID OF THE JWT I WAS CREATED FOR THIS USER!!
+    //(jwt library will create the Test Signature - and compare it with the incoming jwt's signature)
+    //PROMISIFY THE VERIFY ASYNC FUNCTION - AND EXTRACT THE RESOLVED VALUE(if success) - THE JWT PAYLOAD!
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET); 
+    
+    //DECODED PAYLOAD: { id: '6635d561994ee62b6b4f2b0d', iat: 1714806421, exp: 1722582421 }
+    console.log(decoded)
+
+    //STEP 3:  Check if user still exists 
+    //User was deleted (the JWT still existed - so I should not let anyone to login with this jwt!)
+    const currentUser = await User.findById(decoded.id)
+
+    if(!currentUser) return next(new AppError('The user belonging to this token does no longer exist.', 401))
+
+    console.log('THE USER  FROM DB WITH THE ID OF THE JWT')
+    console.log(currentUser)
+
+    //STEP 4: CHECK IF USER HAS RECENTLY CHANGED HIS PASSWORD(AFTER THE JWT WAS ISSUED)
+    if(currentUser.changedPasswordAfter(decoded.iat))
+    {
+         return next(new AppError('User recently changed password! Please log in again', 401))
+    }
 
 
-    //2) Verify the token(using the jwt.verify)
 
-    //3) Check if user still exists 
+
+
+
 
     //4) Check if user changed password after the token was issued
 

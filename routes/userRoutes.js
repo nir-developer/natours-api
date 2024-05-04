@@ -14,4 +14,5 @@ router.post('/login', authController.login)
 //REST END POINTS FOR USER MANAGEMENT - LATER!!!!
 router.post('/',userController.createUser ).get('/', userController.getAllUsers)
 
+router.patch('/:id', userController.updateUser)
 module.exports = router;
