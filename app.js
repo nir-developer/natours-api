@@ -14,6 +14,15 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}))
 //CHECK MULTER!!!!
 
+//TEST FIRST GENERAL EXPRESS M.W
+app.use((req,res,next) =>{
+    req.requestTime = new Date().toISOString(); 
+    //console.log(req.headers)
+
+    next();
+})
+
+
 
 
 //END POINTS 

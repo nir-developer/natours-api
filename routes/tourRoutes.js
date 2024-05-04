@@ -1,4 +1,5 @@
 const tourController = require('../controllers/tourController')
+const authController = require('../controllers/authController')
 const express = require('express')
 
 const tourRouter = express.Router(); 
@@ -17,8 +18,8 @@ tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 ///////////////
 //API (get is the API features)
 tourRouter.route('/')
-    .post(tourController.createTour) 
-    .get(tourController.getAllTours) 
+.get(authController.protect, tourController.getAllTours) 
+.post(tourController.createTour) 
 
 tourRouter.route("/:id")
     .get(tourController.findTour)

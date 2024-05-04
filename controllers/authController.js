@@ -73,6 +73,35 @@ exports.login = catchAsync(async (req,res,next)=>{
         status:'success', 
         token
     })
-    
-
 })
+
+
+//IMPLEMENTING PROTECTED ROUTES USING EXPRESS M.W - the 4 steps!
+exports.protect = catchAsync(async (req,res,next) =>{
+    
+    let token;
+   
+    //STEP 1:  Getting token from request.headers object and check if it's there(Express make it lower case!)
+    if(req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
+    {
+        token = req.headers.authorization.split(' ')[1]; 
+    }
+    
+    if(!token) return next(new AppError('You are not logged in! Please log in to get access.', 401))
+ 
+
+
+    //2) Verify the token(using the jwt.verify)
+
+    //3) Check if user still exists 
+
+    //4) Check if user changed password after the token was issued
+
+     next();
+
+
+    //TEST THE DIFFERENT:
+   // throw new AppError('XX')
+    //next(new AppError('XX'));
+}
+)
