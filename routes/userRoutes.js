@@ -1,5 +1,5 @@
-const authController = require('../controllers/authController')
 const userController = require('../controllers/userController')
+const authController = require('../controllers/authController')
 const express = require('express')
 
 const router = express.Router();
@@ -11,8 +11,14 @@ router.post('/login', authController.login)
 
 
 
-//REST END POINTS FOR USER MANAGEMENT - LATER!!!!
-router.post('/',userController.createUser ).get('/', userController.getAllUsers)
+//REST END POINTS FOR USER MANAGEMENT - ONLY FOR ADMIN ROLE USER- LATER!!!!
+//IMPORTANT: I WANT THE ADMING TO BE ABLE DELETING ANY TYPE OF RESOURCE(USER, TOUR ,ETC..)
 
-router.patch('/:id', userController.updateUser)
+ router.route('/' )
+ .post(userController.createUser)
+ .get( userController.getAllUsers)
+ 
+
+
+
 module.exports = router;

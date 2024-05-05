@@ -19,12 +19,16 @@ tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 //API (get is the API features)
 tourRouter.route('/')
 .get(authController.protect, tourController.getAllTours) 
-.post(tourController.createTour) 
+.post(authController.protect, tourController.createTour) 
 
 tourRouter.route("/:id")
     .get(tourController.findTour)
     .patch(tourController.updateTour)
-    .delete(tourController.deleteTour)
+    //restrictTo "m.w" :a wrapper function takes roles args - and returns my m.w (template) that takes the roles (since can not pass to a m.w parameters)
+    .delete( 
+         authController.protect,
+         authController.restrictTo('admin','lead-guide'), 
+         tourController.deleteTour)
 
 
 

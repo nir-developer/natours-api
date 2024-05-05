@@ -16,6 +16,7 @@ const signToken = id => {
     })
 }
 
+
 exports.signup = catchAsync(async (req,res,next) =>{
 
     //DONT READ OTHER REQUEST FIELDS COMMING FROM THE USER!!(like roles etc..)
@@ -116,18 +117,37 @@ exports.protect = catchAsync(async (req,res,next) =>{
     }
 
 
-
-
-
-
-
-    //4) Check if user changed password after the token was issued
+    //Update the request - add the logged in user 
+    req.user = currentUser; 
+    
 
      next();
 
+    
 
     //TEST THE DIFFERENT:
    // throw new AppError('XX')
     //next(new AppError('XX'));
 }
 )
+
+/**
+ * PASSING ARGUMENT TO M.W - USING A WRAPPER FUNCTION THAT RETURNS THE M.W I WANT TO TAKE ARGS!
+ * USING THE REST PARAMETER SYNTAX: ...roles => Create an array 
+
+ */
+exports.restrictTo = (...roles) => {
+    
+    //Return the desired M.W - that takes arguments
+    return (req,res,next) => {
+       
+       //HAS ACCESS TO THE roles REST PARAMS - SINCE CLOUSRE
+        if(!roles.includes(req.user.role))
+        {
+            return next(new AppError('You are not authorized!', 403))
+        } 
+
+         next();
+    }
+
+}
