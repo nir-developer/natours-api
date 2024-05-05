@@ -123,7 +123,6 @@ exports.protect = catchAsync(async (req,res,next) =>{
 
      next();
 
-    
 
     //TEST THE DIFFERENT:
    // throw new AppError('XX')
@@ -149,5 +148,41 @@ exports.restrictTo = (...roles) => {
 
          next();
     }
+
+}
+
+
+/////////////////////////
+//PASSWORD RESET FUNCTIONALITY 
+exports.forgotPassword = catchAsync(async (req,res,next) =>{
+
+    //1) GET USER BASED ON POSTED EMAIL 
+    const user = await User.findOne({email:req.body.email})
+    console.log(user)
+    if(!user) return next(new AppError('There is no user with that email address', 404))
+    
+    console.log('----------')
+    console.log('CONTROLLER')
+    console.log(user);
+    
+    //2) GENERATE THE RANDOM RESET TOKEN(modify the model instance) - AND SAVE  IT!!
+    const resetToken = user.createPasswordResetToken(); 
+
+    //SUPER IMPORTANT! - DISABLE THE VALIDATORS - TO BE ABLE SAVING THE INCOMING  PARTIAL DATA(THE EMAIL)
+    //const updatedUser = await user.save() -> WILL THROW VALIDATION ERRORS!
+     const updatedUser = await user.save({validateBeforeSave:false})
+    console.log(updatedUser)
+
+
+    //3) SENT THE RESET TOKEN TO USER'S EMAIL
+
+    res.status(200).json({
+        status:'success'
+    })
+
+}
+
+)
+exports.resetPassword = (req,res,next) =>{
 
 }

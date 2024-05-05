@@ -1,7 +1,8 @@
 const {isEmail} = require('validator')
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
-
+//crypto:built in node - for generating less strong hash - 
+const crypto = require('crypto')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -44,7 +45,11 @@ const userSchema = new mongoose.Schema({
         }
      }, 
      //FOR STEP 4 IN THE IMPLEMENTAION OF PROTECTED ROUTES
-     passwordChangedAt: Date
+     passwordChangedAt: Date, 
+
+     //2 fields for password reset functionality
+     passwordResetToken:String  ,
+     passwordResetExpires:Date
 })
 
 
@@ -86,21 +91,41 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp)
         console.log(changedTimestamp, JWTTimestamp)
         console.log(`PASSWORD CHANGED AFTER JWT ISSUED? ${changedTimestamp > JWTTimestamp}`)
         return changedTimestamp > JWTTimestamp;
-     //   return  this.passwordChangedAt.getTime() > Number.parseInt(JWTTimestamp  * 1000);
-        ///TESTS: OK!!!
-        // const isNew = this.passwordChangedAt.getTime() > Number.parseInt(JWTTimestamp  * 1000);
-        // console.log(this.passwordChangedAt.getTime(), Number.parseInt(JWTTimestamp  * 1000))
-        // console.log(`DID USER CHANGED PASSWORD AFTER JWT ISSUED? ${isNew}`)
-        // return isNew
 
     }
-
-    
-
 
     //THE NORMAL CASE(MOST USERS NEVER CHANGE THEIR PASSWORDS...)
     return false;
 }
+
+
+
+userSchema.methods.createPasswordResetToken = function()
+{
+    //CREATE THE PASSWORD(plain text password)
+    const resetToken = crypto.randomBytes(32).toString('hex'); 
+
+    //CREATE THE HASH OF THE RESET PASSWORD - AND UPDATE THE CURRENT DOC INSTANCE 
+    this.passwordResetToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex')
+
+        console.log(resetToken, this.passwordResetToken)
+    
+    //UPDATE THE INSTANCE - IT WILL NOT UPDATE THE DOC IN THE DB!I NEED TO SAVE(in the controller) 
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000; 
+
+
+    //Return the plain text reset token!
+    return resetToken;
+
+}
+const User = mongoose.model('User', userSchema)
+
+module.exports = User;
+
+
 
 
 //STATIC METHOD - OK
@@ -108,6 +133,3 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp)
 //     console.log('INSIDE STATIC')
 //     return await bcrypt.compare(candidatePassword, userPassword);
 // }
-const User = mongoose.model('User', userSchema)
-
-module.exports = User;
