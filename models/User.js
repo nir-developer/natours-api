@@ -39,9 +39,15 @@ const userSchema = new mongoose.Schema({
         }
      }, 
      passwordChangedAt: Date, 
-
      passwordResetToken:String  ,
-     passwordResetExpires:Date
+     passwordResetExpires:Date, 
+
+     active: {
+        type:Boolean , 
+        default: true , 
+        select: false
+
+     }
 })
 
 
@@ -87,6 +93,14 @@ userSchema.pre('save', function(next){
 })
 
 
+//PRE QUERY M.W - (this points to the current Query ) - EXCLUDE ALL NO
+userSchema.pre(/^find/, function(next){
+    //this.find({active: true})
+    //SET EXPLICITYLY! 
+    this.find({active: {$ne: false}})
+
+    next() ; 
+})
 /////////////////////////////////////////////
 //INSTANCE METHODS 
 ///////////////////////////////////
