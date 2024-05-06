@@ -6,7 +6,11 @@ const sendEmail = require('../utils/email')
 
 const {promisify} = require('util')
 
+//For password encryption 
 const jwt = require('jsonwebtoken')
+
+//For token reset for forgetting password
+const crypto = require('crypto');
 
 
 //UTIL FUNCTION TO BE USED IN BOTH signup and login for creating(SIGNING)  a JWT 
@@ -216,9 +220,57 @@ exports.forgotPassword = catchAsync(async (req,res,next) =>{
        return next(new AppError('There was an error sending the email. Try again later!', 500))
 
     }
-}
+})
 
-)
-exports.resetPassword = (req,res,next) =>{
 
-}
+
+ exports.resetPassword = catchAsync(async (req,res,next) =>{
+   
+    console.log('PLAIN TEXT TOKEN FROM REQUEST URL')
+    console.log(req.params.token)
+
+    //STEP 1: Get User based on the token (embedded in URL path)
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(req.params.token)
+        .digest('hex')
+
+    console.log('HASHED TOKEN FROM REQUEST URL - SHOULD BE THE SAME AS IN THE DB - FOR THE NEXT 10 MINS')
+    console.log(hashedToken)
+
+    //FIND THE USER WITH THE HASHED TOKEN WITH A NO EXPIRED RESET TOKEN
+    //NOTE NO SALT HERE ! TEXT PLAINS PASSWORDS ARE THE SAME - THEN THERE HASH IS THE SAME
+    const user = await User.findOne({
+            passwordResetToken:hashedToken, 
+            passwordResetExpires: {$gt: Date.now()}
+        })
+
+
+    if(!user) 
+        return next(new AppError('Token is invalid or has expired', 400))
+   
+
+    //STEP 2: If token is not expired and there is a user - set the new password
+    // -MODIFY THE USER MODEL OBJECT and THEN SAVE THE DOC TO DB(use save!) 
+    // set the new password (and passwordConfirm to the ones sent in the request body 
+    //and also remove the token reset and expiracy
+    user.password = req.body.password; 
+    user.passwordConfirm = req.body.passwordConfirm
+    user.passwordResetToken = undefined; 
+    user.passwordResetExpires=undefined;
+
+    //SAVE THE CHANGE TO DB (THE VALIDATORS WILL BE APPLIED(AND I NEED THE VALIDATOR ON THE passwordConfirm field) - SINCE I SET A PRE-SAVE FOR PASSWORD AND PASSWORD CONFIRM)
+    await user.save() ; 
+    
+    
+    //STEP 3.Update changedPassword property of the user 
+    
+
+    //4. Log the user in (send the JWT to the client)
+     const token = signToken(user._id)
+     
+    res.status(200).json({
+        status:'success', 
+        token
+    })
+})

@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
             message:'Password are not the same'
         }
      }, 
-     //FOR STEP 4 IN THE IMPLEMENTAION OF PROTECTED ROUTES
+     //FOR STEP 4 IN THE IMPLEMENTAION OF PROTECTED ROUTES(FOR CHECKING IF JWT ISSUED BEFORE/AFTER PASSWORD UPDATED)
      passwordChangedAt: Date, 
 
      //2 fields for password reset functionality
@@ -53,7 +53,12 @@ const userSchema = new mongoose.Schema({
 })
 
 
-//PRE-SAVE M.W: PASSWORD MANAGEMENT STEP 2:(HASH THE PASSWORD BEFORE SAVING USER)
+
+////////////////////////////////////////////////////////////////////
+//PRE-SAVE M.W-S
+//////////////////////////////////////////////////////////
+
+//PASSWORD MANAGEMENT STEP 2:(HASH THE PASSWORD BEFORE SAVING USER)
 //   Verify the password has changed since db saved/saved to/from db
 //  and also remove the password confirmation 
 userSchema.pre('save',async function(next){
@@ -69,11 +74,28 @@ userSchema.pre('save',async function(next){
     //WILL SAVE THE USER
     next();
     
-
 })
 
 
-//INSTANCE METHOD  - OK !
+//USED IN FORGOT-RESET  PASSWORD  FUNCTIONALITY
+userSchema.pre('save', function(next){
+    if(!this.isModified('password') || this.isNew) return next();
+
+    //MUST MAKE SURE TIME(JWT ISSUING) > TIME(UPDATE USER DOCUMENT)
+    //OTHERWISE - USER WILL NOT BE ABLE TO USE THE NEW TOKEN(STEP 4 IN PROTECT M.W!!)
+    //SOLUTION - 'HACK' - substruct 1 sec 
+    this.passwordChangedAt = Date.now() - 1000; 
+
+
+
+    next();
+    
+})
+
+
+/////////////////////////////////////////////
+//INSTANCE METHODS 
+///////////////////////////////////
 userSchema.methods.correctPassword = async (candidatePassword, userPassword) => {
     return await bcrypt.compare(candidatePassword, userPassword)
 }
@@ -111,16 +133,17 @@ userSchema.methods.createPasswordResetToken = function()
         .update(resetToken)
         .digest('hex')
 
-        console.log(resetToken, this.passwordResetToken)
-    
+        console.log(`plain text token reset: ${resetToken}`)
+        console.log(`hashed reset token(stored in db):${this.passwordResetToken}`)    
     //UPDATE THE INSTANCE - IT WILL NOT UPDATE THE DOC IN THE DB!I NEED TO SAVE(in the controller) 
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000; 
-
 
     //Return the plain text reset token!
     return resetToken;
 
 }
+
+
 const User = mongoose.model('User', userSchema)
 
 module.exports = User;

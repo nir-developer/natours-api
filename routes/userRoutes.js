@@ -18,8 +18,9 @@ router.post('/login', authController.login)
 router.post('/forgotPassword', authController.forgotPassword)
 
 //STEP 2/2 :request contains the reset token and the new password user wants - 
-//PATCH : SINCE I UPDATE ONLY THE EMAIL IN THE USER DOCUMENT
-//NOTE: THE BELOW URL IS THE URL OF THE LINK SENDING TO THE USER EMAIL - IT HAS THE EMBEDDED RESET TOKEN(plain text)
+//PATCH : SINCE I UPDATE ONLY THE PASSWORD FIELD IN THE USER DOCUMENT
+//NOTE: THE BELOW URL IS THE URL OF THE LINK SENT TO THE USER EMAIL FORM THE HANDLER of the previous /forgotPassword end point 
+// - IT HAS THE EMBEDDED RESET TOKEN(plain text)
 router.patch('/resetPassword/:token', authController.resetPassword)
 
 
