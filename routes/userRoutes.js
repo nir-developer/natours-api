@@ -24,6 +24,10 @@ router.post('/forgotPassword', authController.forgotPassword)
 router.patch('/resetPassword/:token', authController.resetPassword)
 
 
+router.patch('/updateMyPassword',authController.protect,  authController.updateMyPassword)
+
+
+router.patch('/updateMe', authController.protect, userController.updateMe)
 
 
 
@@ -40,8 +44,8 @@ router.patch('/resetPassword/:token', authController.resetPassword)
 //IMPORTANT: I WANT THE ADMING TO BE ABLE DELETING ANY TYPE OF RESOURCE(USER, TOUR ,ETC..)
 
  router.route('/' )
- .post(userController.createUser)
- .get( userController.getAllUsers)
+ .post(authController.protect, authController.restrictTo('admin'), userController.createUser)
+ .get(authController.protect, userController.getAllUsers)
  
 
 
