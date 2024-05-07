@@ -7,13 +7,16 @@ const globalErrorHandler = require('./controllers/errorController')
 
 
 
-//NOTE - I SET THE COOKIE-PARSER(HE DID NOT) FOR PARSING COOKIES THE BROWSER SEND -  ON LECTURE 142 - SENDING JWT VIA COOKIE
+//NOTE - I SET THE COOKIE-PARSER AND CORS (HE DID NOT) FOR PARSING COOKIES THE BROWSER SEND -  ON LECTURE 142 - SENDING JWT VIA COOKIE
 const cookieParser = require('cookie-parser')
+const cors = require('cors')
 
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
-const cors = require('cors')
+const rateLimit = require('express-rate-limit')
+
+
 
 
 
@@ -22,11 +25,26 @@ const app = express();
 if(process.env.NODE_ENV==='development' || process.env.NODE_ENV==='test') 
     app.use(morgan('dev'))
 
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended:false}))
+
+//CONFIGURE RATE LIMITER FOR 100 REQUESTS PER HOUR -FROM SAME IP 
+const limiter = rateLimit({
+    max: 3, 
+    windowMs: 60 * 60 * 1000, 
+    message:'Too many from this IP, please try again in an hour!'
+})
+
+//REGISTER THE limiter as a M.W - ONLY TO MY API
+app.use('/natours/api', limiter);
+
+
+
+//I ADDED CORS AND COOKIE PARSER
 app.use(cookieParser())
 app.use(cors())
 app.options('*', cors())
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended:false}))
 //CHECK MULTER!!!!
 
 
@@ -36,7 +54,7 @@ app.use((req,res,next) =>{
     
     //SET A COOKIE ON THE RESPONSE
     res.cookie('sky', 'blue')
-    
+
 
     next();
 })
