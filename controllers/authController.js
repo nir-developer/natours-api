@@ -3,12 +3,13 @@ const User = require('../models/User');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync')
 const sendEmail = require('../utils/email')
-
+//const cookieParser = require('cookie-parser')
 const {promisify} = require('util')
 
 const jwt = require('jsonwebtoken')
 
 const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
 
 
 const signToken = id => {
@@ -17,18 +18,30 @@ const signToken = id => {
     })
 }
 
-const createSendToken = (user, statusCode, res) =>
-{
-    const token = signToken(user._id)
-    console.log(token.iat)
 
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true
+  };
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
-     res.status(statusCode).json({
-        status:'success', 
-        token
-    })
-     
-}
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user
+    }
+  });
+};
 
 exports.signup = catchAsync(async (req,res,next) =>{
 
@@ -49,6 +62,10 @@ exports.signup = catchAsync(async (req,res,next) =>{
 
 exports.login = catchAsync(async (req,res,next)=>{
     
+    console.log('INSIDE LOGIN SERVER: COOKIES')
+
+    
+    
     //1)CHECK IF PASSWORD AND EMAIL EXISTS IN THE REQUESTS
     const {email, password} = req.body ;
 
@@ -62,7 +79,7 @@ exports.login = catchAsync(async (req,res,next)=>{
      if(!user || !await user.correctPassword(password, user.password)) 
         next(new AppError('Incorrect email or password', 401))
 
-   
+    console.log('SUCCESS LOGIN')
     //3) If all good - send token to the client
     createSendToken(user, 200, res)
   
@@ -72,7 +89,10 @@ exports.login = catchAsync(async (req,res,next)=>{
 //IMPLEMENTING PROTECTED ROUTES USING EXPRESS M.W - the 4 steps!
 exports.protect = catchAsync(async (req,res,next) =>{
     
+   
     let token;
+
+
    
     //STEP 1:  Getting token from request.headers object and check if it's there(Express make it lower case!)
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
@@ -80,6 +100,8 @@ exports.protect = catchAsync(async (req,res,next) =>{
         token = req.headers.authorization.split(' ')[1]; 
     }
     
+    
+
     if(!token) return next(new AppError('You are not logged in! Please log in to get access.', 401))
  
     //2)jwt.verify Verify the token(THIS VERIFICATION STEP - MAKES SURE NO TEMPER AND NO EXPIRATION

@@ -1,28 +1,47 @@
 const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
-
+const testRouter = require('./routes/testRoutes')
 
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
+
+
+
+//NOTE - I SET THE COOKIE-PARSER(HE DID NOT) FOR PARSING COOKIES THE BROWSER SEND -  ON LECTURE 142 - SENDING JWT VIA COOKIE
+const cookieParser = require('cookie-parser')
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
+const cors = require('cors')
+
+
 
 const app = express();   
+
 if(process.env.NODE_ENV==='development' || process.env.NODE_ENV==='test') 
     app.use(morgan('dev'))
 
+app.use(cookieParser())
+app.use(cors())
+app.options('*', cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}))
 //CHECK MULTER!!!!
 
+
 //TEST FIRST GENERAL EXPRESS M.W
 app.use((req,res,next) =>{
     req.requestTime = new Date().toISOString(); 
-    //console.log(req.headers)
+    
+    //SET A COOKIE ON THE RESPONSE
+    res.cookie('sky', 'blue')
+    
 
     next();
 })
+
+
 
 
 
@@ -31,6 +50,11 @@ app.use((req,res,next) =>{
 app.use('/natours/api/v1/tours', tourRouter)
 
 app.use('/natours/api/v1/users/', userRouter)
+
+
+app.use('/natours/api/v1/tests/', testRouter)
+
+
 
 
 //ADMIN ROUTES: 

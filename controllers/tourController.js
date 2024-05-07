@@ -32,6 +32,8 @@ exports.aliasTopTours = (req,res,next) =>{
 exports.getAllTours =  catchAsync(async (req,res,next)=>
 {
  
+    console.log('GET ALL TOURS - EXPECT TO GET SKY BLUE COOKIE SET ON THE FIRST M.W!')
+    console.log(req.cookies)
     //EXECUTE QUERY
     const features = new APIFeatures(Tour.find(), req.query)
         .filter()
@@ -279,6 +281,16 @@ exports.getMonthlyPlan = catchAsync(async (req,res,next) =>{
     })
 
 
+    // exports.getCookies = catchAsync(async (req,res,next)=>{
+
+    //     const cookies = req.cookies;
+    //     console.log(cookies); 
+
+    //     res.status(200).json({
+    //         status:'success', 
+    //         cookies
+    //     })
+    // })
 
 /**SUMMARY: IMPORTANT!!!!!!!!!!!!!!!!
  1) Error Handling
