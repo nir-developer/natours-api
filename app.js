@@ -15,6 +15,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
+const helmet = require('helmet')
 
 
 
@@ -22,22 +23,32 @@ const rateLimit = require('express-rate-limit')
 
 const app = express();   
 
+/////////////////////////////////////////////////////////
+//GLOBAL M.W 
+////////////////////////////////////////
+
+//Set security  HTTP  headers
+app.use(helmet())
+
+//Development logging
 if(process.env.NODE_ENV==='development' || process.env.NODE_ENV==='test') 
     app.use(morgan('dev'))
 
 
-app.use(bodyParser.json())
+//Body Parsers - Reading data from the request body into req.body (limit the body to 10KB)
+app.use(bodyParser.json({limit: '10kb'}))
 app.use(bodyParser.urlencoded({extended:false}))
 
-//CONFIGURE RATE LIMITER FOR 100 REQUESTS PER HOUR -FROM SAME IP 
+//Limit requests from the same IP 
 const limiter = rateLimit({
-    max: 3, 
+    max: 100, 
     windowMs: 60 * 60 * 1000, 
     message:'Too many from this IP, please try again in an hour!'
 })
 
 //REGISTER THE limiter as a M.W - ONLY TO MY API
 app.use('/natours/api', limiter);
+
 
 
 
@@ -53,9 +64,7 @@ app.use((req,res,next) =>{
     req.requestTime = new Date().toISOString(); 
     
     //SET A COOKIE ON THE RESPONSE
-    res.cookie('sky', 'blue')
-
-
+    //res.cookie('sky', 'blue')
     next();
 })
 
