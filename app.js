@@ -14,8 +14,12 @@ const cors = require('cors')
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
+
+//SECURITY M.W
 const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
+const mongoSanitize= require('express-mongo-sanitize')
+const xss = require('xss-clean')
 
 
 
@@ -39,6 +43,13 @@ if(process.env.NODE_ENV==='development' || process.env.NODE_ENV==='test')
 app.use(bodyParser.json({limit: '10kb'}))
 app.use(bodyParser.urlencoded({extended:false}))
 
+//DATA SANITIZATION : Write below the body parser that reads the user input data : 
+//1) AGAINST NOSQL INJECTION ATTACK  XSS ATTACK 
+app.use(mongoSanitize());
+//2) AGAINST XSS ATTACK 
+app.use(xss());
+
+
 //Limit requests from the same IP 
 const limiter = rateLimit({
     max: 100, 
@@ -53,10 +64,16 @@ app.use('/natours/api', limiter);
 
 
 //I ADDED CORS AND COOKIE PARSER
+app.use(cors({
+    origin:'http://localhost:1234',
+    credentials:true
+}))
+
 app.use(cookieParser())
-app.use(cors())
-app.options('*', cors())
-//CHECK MULTER!!!!
+// app.options('*', cors({
+
+// }))
+
 
 
 //TEST FIRST GENERAL EXPRESS M.W
@@ -67,6 +84,10 @@ app.use((req,res,next) =>{
     //res.cookie('sky', 'blue')
     next();
 })
+
+
+//TESTS END POINTS - TEST COOKIES ON JS CLIENT
+app.use('/natours/api/v1/tests', testRouter)
 
 
 

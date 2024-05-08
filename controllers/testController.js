@@ -7,7 +7,7 @@ const catchAsync = require('../utils/catchAsync')
 exports.getCookies = catchAsync(async (req,res,next) =>{
 
     const cookies = req.cookies; 
-
+    
     console.log('GET COOKIES HANDLER - COOKIES:')
     console.log(cookies)
     res.status(200).json({

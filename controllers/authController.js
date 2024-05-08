@@ -29,14 +29,21 @@ const createSendToken = (user, statusCode, res) => {
   };
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
+  //TEST IN THE RESPONSE HEADER IF THERE IS A Header: Set-Cookie with the token value
   res.cookie('jwt', token, cookieOptions);
 
+
+   res.cookie('httpOnlyCookieName','cookieValue', {
+    httpOnly:true
+  });
   // Remove password from output
   user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
+    //In the beginning I sent the toke as a simple string in the request body!
     token,
+    message:'HTTPOnly Cookie Set',
     data: {
       user
     }
@@ -90,6 +97,14 @@ exports.login = catchAsync(async (req,res,next)=>{
 exports.protect = catchAsync(async (req,res,next) =>{
     
    
+    //console.log('INSIDE PROTECT M.W: cookies:', req.cookies['jwt'])
+
+    console.log('INSIDE PROTECT M.W: cookies:', req.cookies['token'])
+
+
+    //OK
+    console.log('INSIDE PROTECT M.W: HTTP headers:', req.headers.authorization)
+
     let token;
 
 
