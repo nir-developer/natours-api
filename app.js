@@ -20,6 +20,7 @@ const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
 const mongoSanitize= require('express-mongo-sanitize')
 const xss = require('xss-clean')
+const hpp = require('hpp');
 
 
 
@@ -48,6 +49,22 @@ app.use(bodyParser.urlencoded({extended:false}))
 app.use(mongoSanitize());
 //2) AGAINST XSS ATTACK 
 app.use(xss());
+
+//Preventing Http Parameter Polution M.W 
+//ADD WHITE-LIST TO BE ABLE TO PASS DUPLICATE PARAMETER NAMES ON THE QUERY STRING QUERY STRING PARAMATERS(LIKE  DURATION,)
+app.use(hpp({
+    whitelist: [
+        'duration',
+        'ratingsQuantity' , 
+        'ratingsAverage', 
+        'price', 
+        'difficulty',
+        'maxGroupSize'
+        
+
+    ]
+}))
+
 
 
 //Limit requests from the same IP 

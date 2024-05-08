@@ -43,6 +43,7 @@ class APIFeatures{
     //2)SORT
     sort()
     {
+        console.log(this.queryString);
         // if(req.query.sort) 
         if(this.queryString.sort) 
         {   
