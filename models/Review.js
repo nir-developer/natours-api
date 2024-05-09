@@ -43,6 +43,23 @@ const reviewSchema = new mongoose.Schema({
 }
 )
 
+//PREPOPULATE QUERY OF THE USER AND TOUR 
+reviewSchema.pre(/^find/, function(next){
+
+    //this - current Query - Review.find({}) 
+    this.populate({
+        path:'tour', 
+        select:'name'
+    }).populate({
+        path:'user', 
+        //DONT LEAK THE REVIEWS  SENSITIVE DATA - AS EMAIL! 
+        select:('name photo')
+    })
+
+    next()
+    
+})
+
 
 
 const Review = mongoose.model('Review', reviewSchema)
