@@ -1,6 +1,8 @@
+//For fetching the corresponding guides 
+const User = require('./User')
+
 const mongoose = require('mongoose')
 const slugify = require('slugify')
-
 
 
 
@@ -123,12 +125,10 @@ const tourSchema = new mongoose.Schema({
         day:Number
     }
         
-
-    ]
-
-
-    
-
+    ], 
+    //DO I NEED TO ADD IT - OR LET IT BE CREATED LATER WHEN ADDING GUIDES IN THE REQUEST??
+    //YES! OTHERWISE - I WILL GET CAN NOT RUN MAP ON UNDEFINED!
+    guides:[]
 },
 //MUST ADD THIS OPTIONS OBJECT TO THE SCHEMA - OTHERWISE V.P WILL NOT BE RETURNED IN THE OUTPUT!!
 {
@@ -165,6 +165,19 @@ tourSchema.pre('save', function(next){
     next();
 })
 
+//PRE-SAVE M.W FOR ADDING EMBEDDING THE USERS  WITH THE IDS FROM THE REQUEST - INTO THE TOUR - RIGHT BEFORE IT IS SAVED 
+tourSchema.pre('save', async function(next) {
+    
+    //CREATE AN ARRAY OF PROMISE<User> 
+    const guidesPromises = this.guides.map(async id =>  User.findById(id))
+
+    //RUN ALL THE  PROMISES IN THE ARRAY AT THE SAME TIME! 
+    this.guides = await Promise.all(guidesPromises);
+
+
+    next(); 
+})
+
 
 //PRE-FIND QUERY M.W 
 //THIS M.W WILL BE EXECUTED RIGHT BEFORE THE API Features :  await Tour.find({}..)
@@ -175,14 +188,11 @@ tourSchema.pre(/^find/, async function(next) {
    
     const notSecretTours =  this.find({secretTour: {$ne : true}})
 
-  
     //ADD TO THE current Query object a property (in ms)
     this.start = Date.now(); 
 
-
     next();
     
-
 })
 
 

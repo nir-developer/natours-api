@@ -61,6 +61,8 @@ exports.getAllTours =  catchAsync(async (req,res,next)=>
 
 exports.createTour = catchAsync(async (req,res,next) =>{
 
+    console.log('INSIDE createTour - id guides array ')
+    console.log(req.body.guides)
      const newTour = await Tour.create(req.body); 
 
      res.status(201).json({
