@@ -61,7 +61,10 @@ const deleteData =async () => {
 
 
 //READ TOURS OBJECT FROM THE JSON FILE - SYNC!
- const tours = JSON.parse(fs.readFileSync(path.join(__dirname, 'tours-simple.json'), 'utf-8'))
+//  const tours = JSON.parse(fs.readFileSync(path.join(__dirname, 'tours-simple.json'), 'utf-8'))
+
+//Tours with embedded locations!
+ const tours = JSON.parse(fs.readFileSync(path.join(__dirname, 'tours.json'), 'utf-8'))
 
 
 

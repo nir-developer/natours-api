@@ -94,7 +94,40 @@ const tourSchema = new mongoose.Schema({
     secretTour: {
         type:Boolean, 
         default: false
+    }, 
+    startLocation:{
+        //GeoJSON(Must have at least the 2 fields name: type and coordinates)
+        type:{
+           type:String, 
+           default:'Point', 
+           enum:['Point']
+        },
+        coordinates:[Number], 
+        //Optionals properties for GeoJSON
+        address:String,
+        description:String
+    },
+    //EMBED Location DOCUMENT Into this Tour document - must use an array of GeoJSON type !
+    locations:[
+        {
+        //GeoJSON(Must have at least the 2 fields name: type and coordinates)
+        type:{
+           type:String, 
+           default:'Point', 
+           enum:['Point']
+        },
+        coordinates:[Number], 
+        //Optionals properties for GeoJSON
+        address:String,
+        description:String,
+        day:Number
     }
+        
+
+    ]
+
+
+    
 
 },
 //MUST ADD THIS OPTIONS OBJECT TO THE SCHEMA - OTHERWISE V.P WILL NOT BE RETURNED IN THE OUTPUT!!
