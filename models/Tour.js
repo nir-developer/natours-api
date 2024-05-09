@@ -210,6 +210,19 @@ tourSchema.pre(/^find/, async function(next) {
 })
 
 
+//MAKE ALL THE QUERIES (findXXX - to populate the users into the tour)
+tourSchema.pre(/^find/, function(next){
+
+    //this - points to the current Query Object: Tour.findById() etc..
+    this.populate({
+        path:'guides', 
+        select:'-__v -passwordChangedAt'
+    })
+
+
+    next(); 
+})
+
 //POST FIND M.W 
 tourSchema.post(/^find/, function(docs, next) {
 

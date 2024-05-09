@@ -78,8 +78,8 @@ exports.createTour = catchAsync(async (req,res,next) =>{
 exports.findTour = catchAsync(async (req,res,next) =>{
     
        //MONGOOSE:  Tour.findById(req.params.id): shorthand of Tour.findOne({_id: req.params.id})
-        const tour = await Tour.findById(req.params.id) ;
-
+       //POPULATE THE TOUR WITH THE REFERENCED USERS - AND FILTER OUT THE  USER FIELD NAMES: FORM THE RESULT SET
+        const tour = await Tour.findById(req.params.id)
         if(!tour) 
         return next( new AppError('No tour found with that ID', 404))
     
