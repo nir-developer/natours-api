@@ -126,9 +126,23 @@ const tourSchema = new mongoose.Schema({
     }
         
     ], 
+    //THE REFERENCING SOLUTION - USED IN THIS PROJECT(FOR PREVENTING MULTIPLE UPDATES FOR WHEN UPDATE THE USER I DONT HAVE TO TO UPDATE THE TOUR)
+    guides:[
+       { 
+        //SCHEMA TYPE DEFINITION
+        type: mongoose.Schema.ObjectId, 
+        //By using ref - I dont  need to import the User.js
+        ref:'User'
+       }
+    ]
+
+    //THE EMBEDDING SOLUTION - JUST FOR DEMO!!
     //DO I NEED TO ADD IT - OR LET IT BE CREATED LATER WHEN ADDING GUIDES IN THE REQUEST??
     //YES! OTHERWISE - I WILL GET CAN NOT RUN MAP ON UNDEFINED!
-    guides:[]
+    //guides:Array
+    //OR
+    //guides:[]
+
 },
 //MUST ADD THIS OPTIONS OBJECT TO THE SCHEMA - OTHERWISE V.P WILL NOT BE RETURNED IN THE OUTPUT!!
 {
