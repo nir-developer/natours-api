@@ -1,7 +1,8 @@
+//MY ROUTERS
 const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const testRouter = require('./routes/testRoutes')
-
+const reviewRouter = require('./routes/reviewRoutes')
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
 
@@ -103,8 +104,6 @@ app.use((req,res,next) =>{
 })
 
 
-//TESTS END POINTS - TEST COOKIES ON JS CLIENT
-app.use('/natours/api/v1/tests', testRouter)
 
 
 
@@ -113,10 +112,15 @@ app.use('/natours/api/v1/tests', testRouter)
 ///////////////////////////////////
 //END POINTS 
 app.use('/natours/api/v1/tours', tourRouter)
-
 app.use('/natours/api/v1/users/', userRouter)
+app.use('/natours/api/v1/reviews', reviewRouter)
 
 
+
+
+
+//TESTS END POINTS - TEST COOKIES ON JS CLIENT
+app.use('/natours/api/v1/tests/', testRouter)
 app.use('/natours/api/v1/tests/', testRouter)
 
 
