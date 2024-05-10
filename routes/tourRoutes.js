@@ -1,5 +1,6 @@
 const tourController = require('../controllers/tourController')
 const authController = require('../controllers/authController')
+const reviewController = require('../controllers/reviewController')
 const express = require('express')
 
 const tourRouter = express.Router(); 
@@ -31,6 +32,15 @@ tourRouter.route("/:id")
          tourController.deleteTour)
 
 
+
+//NESTED ROUTES (LECTURE 158 - counter intuitive - logic for calling review controller  here in the tour routeer)
+//WILL BE FIXED NEXT LECTURE 159 - USING EXPRESS MERGE PARAMS!
+tourRouter.route('/:tourId/reviews')
+    .post(
+        authController.protect,
+        authController.restrictTo('user'),
+        reviewController.createReview
+        )
         
 
 
