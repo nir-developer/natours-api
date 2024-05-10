@@ -164,6 +164,15 @@ tourSchema.virtual('durationWeeks').get(function(){
 })
 
 
+//VIRTUAL POPULATE - GET ACCESS TO THE REVIEWS - WITHOUT HAVING CHILD REFERENCING ARRAY STORED IN DB
+tourSchema.virtual('reviews', {
+    ref:'Review',
+    //CONNECTING THE 2 MODELS: tour is the name of the field that stores the id of the current tour document in the review document 
+    foreignField: 'tour',
+    localField:'_id'
+
+})
+
 //IMPORTANT: I MUST HAVE THE slug PROPERTY ON THE SCHEMA DEFINED! OTHERWISE - this.slug = value - WILL NOT BE PERSISTED TO DB! 
 
 //PRE SAVE DOCUMENT M.W : cb  m.w execute  ONLY between calling .save() and .create()

@@ -44,17 +44,27 @@ const reviewSchema = new mongoose.Schema({
 )
 
 //PREPOPULATE QUERY OF THE USER AND TOUR 
+//REMOVE THE POPULATE OF THE TOURS ON THE REVIEW - SINCE POPULATE CHAIN RECURSION PROBLEM
+    //NOTE - ITS MORE CORRECT TO HAVE THE REVIEWS AVAILABLE ON THE TOURS THAN HAVING THE TOURS AVAILABLE ON THE REVIEW
+    // this.populate({
+    //     path:'tour', 
+    //     select:'name'
+    // }).populate({
+    //     path:'user', 
+    //     //DONT LEAK THE REVIEWS  SENSITIVE DATA - AS EMAIL! 
+    //     select:('name photo')
+    // })
 reviewSchema.pre(/^find/, function(next){
 
     //this - current Query - Review.find({}) 
     this.populate({
-        path:'tour', 
-        select:'name'
-    }).populate({
-        path:'user', 
-        //DONT LEAK THE REVIEWS  SENSITIVE DATA - AS EMAIL! 
+        path:'user',
         select:('name photo')
     })
+
+
+
+    
 
     next()
     
