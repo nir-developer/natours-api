@@ -3,15 +3,22 @@ const reviewController = require('../controllers/reviewController')
 
 const express = require('express')
 
+//NESTED ROUTES  - EXAMPLE 
+//POST tours/3234234/reviews 
+//GET tours/343432/reviews 
+//GET tours/343433/reviews/3423
 
-const reviewRouter = express.Router();
+//EXPRESS NESTED ROUTES - SINCE I NEED ACCESS TO THE tourId in the nested route : tours/tourId/reviews/
+const reviewRouter = express.Router({
+    mergeParams:true
+});
 
 
+
+//ALL THE ABOE NESTED ROUTES - WILL BE  REDIRECTED  TO THE CURRENT ROUTE OF THE REVIEWS: '/'
 reviewRouter
     .route('/')
-    ///PUBLIC END POINT
     .get( reviewController.getAllReviews)
-    //PROTECTED END POINT - RESTRICTED ONLY FOR NORMAL USERS(customers)
     .post(
         authController.protect, 
         authController.restrictTo('user') ,

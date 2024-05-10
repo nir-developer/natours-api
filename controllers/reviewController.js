@@ -7,11 +7,12 @@ const Review = require('../models/Review')
 
 exports.createReview= catchAsync(async (req,res,next) =>{
 
+    console.log(req.params.tourId)
 
     //ALLOW NESTED ROUTES
     //FIRST CHECK IF THE tour id and user id passed manually by the client in the request body(GOOD FOR DEVELOPMENT)
     //IF NOT TAKE USER ID FROM THE CURRENTLY LOGGED IN USER AND TOUR ID FROM THE URL(IDEAL SOLUTION! REAL WORLD - THIS IS HOW IT WORKS!)
-    if(!req.body.tour) req.body.tour = req.params.tour;
+    if(!req.body.tour) req.body.tour = req.params.tourId;
     if(!req.body.user) req.body.user = req.user.id
 
 
