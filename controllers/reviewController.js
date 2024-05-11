@@ -32,7 +32,12 @@ exports.createReview= catchAsync(async (req,res,next) =>{
 //GREAT!
 exports.getAllReviews = catchAsync(async (req,res,next)=>{
 
-    const reviews =  await Review.find({})
+    let filter = {}
+    //CHECK IF THERE IS tourId on the nested route(MUST ENABLE Express Merge params before -on the review router)
+    if(req.params.tourId)  filter.tour = req.params.tourId;
+    
+   
+    const reviews =  await Review.find(filter)
     console.log(reviews);
 
 
