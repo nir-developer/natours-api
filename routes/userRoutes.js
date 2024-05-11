@@ -36,18 +36,21 @@ router.delete('/deleteMe', authController.protect, userController.deleteMe)
 
 
 
-
-
-
-
-
 //////////////
-//REST END POINTS FOR USER MANAGEMENT - ONLY FOR ADMIN ROLE USER- LATER!!!!
+//REST END POINTS FOR USER MANAGEMENT!!!!!
+// - ONLY FOR ADMIN ROLE USER- LATER!!!!
 //IMPORTANT: I WANT THE ADMING TO BE ABLE DELETING ANY TYPE OF RESOURCE(USER, TOUR ,ETC..)
 
  router.route('/' )
  .post(authController.protect, authController.restrictTo('admin'), userController.createUser)
  .get(authController.protect, userController.getAllUsers)
+
+
+ router.route('/:id')
+    .delete(
+        authController.protect,
+        authController.restrictTo('admin'),
+        userController.deleteUser)
  
 
 

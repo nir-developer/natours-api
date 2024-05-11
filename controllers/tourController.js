@@ -2,7 +2,7 @@ const Tour = require('../models/Tour')
 const APIFeatures = require('../utils/apiFeatures')
 const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
-
+const factory = require('./handlerFactory')
 // //CATCH ASYNC(ERROR HANDLING)
 // //DO I HAVE TO PASS next to fn??
 // const catchAsync = fn => (req,res,next) => fn(req,res,next).catch(next)
@@ -136,19 +136,25 @@ exports.updateTour = catchAsync( async (req,res,next) =>{
    
 })
 
-
-exports.deleteTour =  catchAsync(async(req,res,next) =>{
-
-   const tour =  await Tour.findByIdAndDelete(req.params.id)
-
-   if(!tour) 
-    return next( new AppError('No tour found with that ID', 404))
+//NOTE - THE BELOW  FUNCTION IS CALLED IMMEDIATLY - TOP LEVEL CODE : The return function is stored in the deleteOne function(variable) 
+//UNTIL A REQUEST IS COMING - AND THEN EXPRESS WILL CALL THE CREATED FUNCTION RETURNED BY THE FACTORY!
+exports.deleteTour = factory.deleteOne(Tour)
 
 
-    res.status(204).json({
-        status:'success', 
-    })
-})
+
+//BEFORE REFACTORING THE FACTORY METHOD REFACTORING TO 
+// exports.deleteTour =  catchAsync(async(req,res,next) =>{
+
+//    const tour =  await Tour.findByIdAndDelete(req.params.id)
+
+//    if(!tour) 
+//     return next( new AppError('No tour found with that ID', 404))
+
+
+//     res.status(204).json({
+//         status:'success', 
+//     })
+// })
 
 
 

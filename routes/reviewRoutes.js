@@ -22,8 +22,17 @@ reviewRouter
     .post(
         authController.protect, 
         authController.restrictTo('user') ,
-        reviewController.createReview)
+        reviewController.createReview
+       )
     
-        
+
+       
+reviewRouter
+.route('/:id')
+.delete(authController.protect, 
+    //the admin and normal should be able to delete a review
+        authController.restrictTo('user') ,
+        reviewController.deleteReview
+    )
 
 module.exports = reviewRouter;

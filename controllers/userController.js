@@ -1,6 +1,6 @@
 const catchAsync = require('../utils/catchAsync')
 const User = require('../models/User')
-
+const factory = require('./handlerFactory')
 
 const filterObj = (obj, ...allowedFields) =>{
 
@@ -74,7 +74,7 @@ exports.updateMe = catchAsync(async(req,res,next) =>{
 })
 
 
-
+//USED BY THE CURRENT LOGGED IN USER - DOES NOT REMOVE THE CURRENT USER - JUST DEACTIVEATE
 exports.deleteMe = catchAsync(async(req,res,next) =>{
     
     //"REMOVE" - THE CURRENT LOGGED IN ACCOUNT
@@ -86,10 +86,12 @@ exports.deleteMe = catchAsync(async(req,res,next) =>{
         data:null
     })
 
-
 })
 
 
+
+//FOR EFFECTIRLVY DELETE USER FROM DB - BY THE ADMIN!
+exports.deleteUser = factory.deleteOne(User)
 
 
 
