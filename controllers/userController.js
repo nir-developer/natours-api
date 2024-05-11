@@ -2,6 +2,8 @@ const catchAsync = require('../utils/catchAsync')
 const User = require('../models/User')
 const factory = require('./handlerFactory')
 
+
+
 const filterObj = (obj, ...allowedFields) =>{
 
     const newObj = {}
@@ -11,46 +13,6 @@ const filterObj = (obj, ...allowedFields) =>{
 
     return newObj;
 }
-
-
-//FOR EFFECTIVELY DELETE USER FROM DB - BY THE ADMIN!
-exports.deleteUser = factory.deleteOne(User)
-
-//IMPORTANT!!!!! DO NOT UPDATE PASSWORDS WITH THIS!(SINCE PASSWORD UPDATE IS IMPLEMENTED IN A DIFFERENT FUNCTIONALITY THAT USES PRE-SAVE M.W !!)
-exports.updateUser = factory.updateOne(User); 
-
-
-///NOTE: AS FOR ALL USER WITH ANY ROLE - THE PASSWORD IS HASHED IN THE USER MODEL PRE-SAVE M.W!!
-exports.createUser = catchAsync(async(req,res,next) =>{
-
-    //EXTRACT ALL FIELDS - INCLUDES ROLES!
-    const newUser = await User.create(req.body)
-
-    console.log(newUser)
-
-    res.status(201).json({
-        status:'success', 
-        data:{
-            user:newUser
-        }
-    })
-
-})
-
-exports.getAllUsers = catchAsync(async(req,res,next) =>{
-
-    const users = await User.find(); 
-    console.log(users)
-
-    res.status(200).json({
-        status:'success', 
-        results:users.length, 
-        data:{
-            users
-        }
-        
-    })
-})
 
 
 exports.updateMe = catchAsync(async(req,res,next) =>{
@@ -95,6 +57,51 @@ exports.deleteMe = catchAsync(async(req,res,next) =>{
     })
 
 })
+
+/////////////////////////////////////////////////
+//ADMIN END POINTS - USERS MANAGEMENT!!
+/////////////////////////////////////////////
+exports.getAllUsers = factory.getAll(User)
+
+//FOR EFFECTIVELY DELETE USER FROM DB - BY THE ADMIN!
+exports.deleteUser = factory.deleteOne(User)
+
+//IMPORTANT!!!!! DO NOT UPDATE PASSWORDS WITH THIS!(SINCE PASSWORD UPDATE IS IMPLEMENTED IN A DIFFERENT FUNCTIONALITY THAT USES PRE-SAVE M.W !!)
+exports.updateUser = factory.updateOne(User); 
+
+
+//NO POPULATE NEEDED!
+ exports.getUser = factory.getOne(User);
+
+
+//THIS ROUTE WILL NEVER BE - CHECK NHAM - HE LET ADMINS TO CREATE USERS! BEFORE HAVING SIGNUP!
+exports.createUser = catchAsync(async(req,res,next) =>{
+
+
+    res.status(500).json({
+        status:'error', 
+        message:'This route is not defined! Please use /signup instead'
+    })
+
+})
+
+
+
+//BEFORE THE getAll Factory function refactoring!
+// exports.getAllUsers = catchAsync(async(req,res,next) =>{
+
+//     const users = await User.find(); 
+//     console.log(users)
+
+//     res.status(200).json({
+//         status:'success', 
+//         results:users.length, 
+//         data:{
+//             users
+//         }
+        
+//     })
+// })
 
 
 

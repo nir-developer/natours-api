@@ -1,3 +1,4 @@
+const APIFeatures = require('../utils/apiFeatures')
 const catchAsync = require('../utils/catchAsync')
 
 const AppError = require('../utils/appError')
@@ -51,3 +52,73 @@ exports.createOne = Model =>  catchAsync(async (req,res,next) =>{
           
      })
 })
+
+
+/**
+ * IMPORTANT : the popOptions is to be able to use this getOne on the Tour resource 
+ * which has the getTour controller - that populate the reviews on the Tour.findById query ! 
+ * 
+//SIMILAR LOGIC AS WITH THE API FEATURES - BUILD THE QUERY STEP BY STEP - BEFORE EXECUTING IT
+//First Get the query without executing it 
+//UPDATE THE QUERY IF THERE IS POPULATE 
+ */
+exports.getOne = (Model, popOptions) => 
+    catchAsync(async (req,res,next) =>{
+    
+       let query =  Model.findById(req.params.id) 
+
+       if(popOptions) query = query.populate(popOptions)
+       
+    //EXECUTE THE QUERY TO GET THE DOCUMENT
+     const doc = await query; 
+
+       if(!doc) 
+        return next( new AppError('No document found with that ID', 404))
+    
+    
+    res.status(200).json({
+        status:'success', 
+        data:{
+            data:doc
+        }
+    })
+})
+
+
+
+ //IMPORTANT - FOR THE FEFACTORING TO WORK: 
+ //"HACK SOLUTION" - FOR THE LOGIC THAT THE getAllReviews has the logic of creating the filter object 
+//but the TOur and User does not have :
+ //CHECK IF THERE IS tourId on the nested route(MUST ENABLE Express Merge params before -on the review router)
+exports.getAll = Model => catchAsync(async (req,res,next)=>
+{
+   
+    //HACK!(the filter object logic - is extracted to this method from the previous getAllReviews !)
+    let filter = {}
+    if(req.params.tourId)  filter.tour = req.params.tourId;
+    
+ 
+    //EXECUTE QUERY
+    const features = new APIFeatures(Model.find(filter), req.query)
+        .filter()
+        .sort()
+        .paginate();
+       
+
+    //NOTE: ALL THE CHAINS QUERY ARE STORED IN THE features.query
+    //IMPORTANT !! IF THERE ARE PRE-FIND M.W - THEY WILL BE EXECUTED NOW!! BEFORE THE AWAIT (EXECUTING THE QUERY
+    const docs = await features.query;
+
+    
+        //SEND RESPONSE
+        res.status(200).json({
+            status:'success', 
+            results: docs.length, 
+            data:{
+                data:docs
+            }
+        })
+    
+}
+
+)

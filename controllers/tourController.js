@@ -11,6 +11,8 @@ const factory = require('./handlerFactory')
 exports.deleteTour = factory.deleteOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
 exports.createTour = factory.createOne(Tour)
+//IMPORATNT - PASS THE POPULATE OBJECT - TO THE FACTORY ! SINCE TOUR HAS POPULATE OF HIS REVIEWS!
+exports.getTour = factory.getOne(Tour, {path: 'reviews'})
 
 exports.aliasTopTours = (req,res,next) =>{
 
@@ -27,39 +29,43 @@ exports.aliasTopTours = (req,res,next) =>{
     
 }
 
-//AFTER REFACTORING TO THE APIFeatures THIS METHOD WILL BE MUCH CLEANER
+exports.getAllTours = factory.getAll(Tour)
+
+
+
+//AFTER REFACTORING TO THE APIFeatures - AND BEFORE REFACTROING TO THE getAll Factory !
+// THIS METHOD WILL BE MUCH CLEANER
 //THIS METHOD JUST BUILD THE INSTANCE CONTAINS ALL THE API-FEATURES - BY CONSTRUCTING AN INSTANCE OF APIFeature using Builder 
 //NO ERROR SHOULD BE THROWN FOR NO RESULTS!
 //NAM RETURNS 204 FOR EMPTY RESULTS JONAS RETURNS 200
-exports.getAllTours =  catchAsync(async (req,res,next)=>
-{
+// exports.getAllTours =  catchAsync(async (req,res,next)=>
+// {
  
-    console.log('GET ALL TOURS - EXPECT TO GET SKY BLUE COOKIE SET ON THE FIRST M.W!')
-    console.log(req.cookies)
-    //EXECUTE QUERY
-    const features = new APIFeatures(Tour.find(), req.query)
-        .filter()
-        .sort()
-        .paginate();
+//     console.log('GET ALL TOURS - EXPECT TO GET SKY BLUE COOKIE SET ON THE FIRST M.W!')
+//     console.log(req.cookies)
+//     //EXECUTE QUERY
+//     const features = new APIFeatures(Tour.find(), req.query)
+//         .filter()
+//         .sort()
+//         .paginate();
        
 
-    //NOTE: ALL THE CHAINS QUERY ARE STORED IN THE features.query
-    //IMPORTANT !! IF THERE ARE PRE-FIND M.W - THEY WILL BE EXECUTED NOW!! BEFORE THE AWAIT (EXECUTING THE QUERY
-    const tours = await features.query;
+//     //NOTE: ALL THE CHAINS QUERY ARE STORED IN THE features.query
+//     //IMPORTANT !! IF THERE ARE PRE-FIND M.W - THEY WILL BE EXECUTED NOW!! BEFORE THE AWAIT (EXECUTING THE QUERY
+//     const tours = await features.query;
 
+//         //SEND RESPONSE
+//         res.status(200).json({
+//             status:'success', 
+//             results: tours.length, 
+//             data:{
+//                 tours
+//             }
+//         })
     
-        //SEND RESPONSE
-        res.status(200).json({
-            status:'success', 
-            results: tours.length, 
-            data:{
-                tours
-            }
-        })
-    
-}
+// }
 
-)
+// )
 
 // exports.createTour = catchAsync(async (req,res,next) =>{
 
@@ -77,30 +83,32 @@ exports.getAllTours =  catchAsync(async (req,res,next)=>
 // })
 
 
+
+//BEFORE REFACTORING TO THE FACTORY - getOne!!
 //IMPORTANT - JONAS WRONG -I UPDATED THE BELOW CODE OF JONAS (Q.A) - ADDED POPULATE - IN LECTURE 157 -Virtual  Populate the tours - to get revies
  // const tour = await Tour.findById(req.params.id)
-exports.findTour = catchAsync(async (req,res,next) =>{
+// exports.findTour = catchAsync(async (req,res,next) =>{
     
-    //MONGOOSE:  Tour.findById(req.params.id): shorthand of Tour.findOne({_id: req.params.id})
-    //POPULATE THE TOUR WITH THE REFERENCED USERS - AND FILTER OUT THE  USER FIELD NAMES: FORM THE RESULT SET
-       const tour = await Tour.findById(req.params.id).populate('reviews');
-        if(!tour) 
-        return next( new AppError('No tour found with that ID', 404))
+//     //MONGOOSE:  Tour.findById(req.params.id): shorthand of Tour.findOne({_id: req.params.id})
+//     //POPULATE THE TOUR WITH THE REFERENCED USERS - AND FILTER OUT THE  USER FIELD NAMES: FORM THE RESULT SET
+//        const tour = await Tour.findById(req.params.id).populate('reviews');
+//         if(!tour) 
+//         return next( new AppError('No tour found with that ID', 404))
     
     
-    res.status(200).json({
-        status:'success', 
-        data:{
-            tour
-        }
-    })
+//     res.status(200).json({
+//         status:'success', 
+//         data:{
+//             tour
+//         }
+//     })
 
 
-    //if(!tour) throw new Error(`tour with id ${req.params.id} not found`)
-    //USE MY CUSTOMER ERROR CLASS - AND PASS TO EXPRESS M.W TO RETURN THE ERROR RESPONSE
+//     //if(!tour) throw new Error(`tour with id ${req.params.id} not found`)
+//     //USE MY CUSTOMER ERROR CLASS - AND PASS TO EXPRESS M.W TO RETURN THE ERROR RESPONSE
 
   
-})
+// })
 
 
 

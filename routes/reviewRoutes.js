@@ -39,6 +39,7 @@ reviewRouter
     )
 .patch(
     reviewController.updateReview)
+.get(reviewController.getReview)
 
 
 module.exports = reviewRouter;

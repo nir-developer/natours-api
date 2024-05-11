@@ -44,11 +44,12 @@ tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 ///////////////
 //API (get is the API features)
 tourRouter.route('/')
-.get(authController.protect, tourController.getAllTours) 
+///PUBLIC ROUTES!!
+.get( tourController.getAllTours) 
 .post(authController.protect, tourController.createTour) 
 
 tourRouter.route("/:id")
-    .get(tourController.findTour)
+    .get(tourController.getTour)
     .patch(tourController.updateTour)
     //restrictTo "m.w" :a wrapper function takes roles args - and returns my m.w (template) that takes the roles (since can not pass to a m.w parameters)
     .delete( 
@@ -57,7 +58,5 @@ tourRouter.route("/:id")
          tourController.deleteTour)
 
 
-         
     
-
 module.exports = tourRouter;
