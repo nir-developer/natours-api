@@ -5,29 +5,49 @@ const factory = require('./handlerFactory')
 
 
 
-exports.createReview= catchAsync(async (req,res,next) =>{
+//SUPER IMPORTANT - FOR REFACTORING!!!
+//EXTRACT FUNCTION:(M.W) - Decoule the logic that is not relevant for creating a review 
+//and prevent refactoring to createOne !
+//ALLOW NESTED ROUTES
+//FIRST CHECK IF THE tour id and user id passed manually by the client in the request body(GOOD FOR DEVELOPMENT)
+//IF NOT TAKE USER ID FROM THE CURRENTLY LOGGED IN USER AND TOUR ID FROM THE URL(IDEAL SOLUTION! REAL WORLD - THIS IS HOW IT WORKS!)
 
-    console.log(req.params.tourId)
 
-    //ALLOW NESTED ROUTES
-    //FIRST CHECK IF THE tour id and user id passed manually by the client in the request body(GOOD FOR DEVELOPMENT)
-    //IF NOT TAKE USER ID FROM THE CURRENTLY LOGGED IN USER AND TOUR ID FROM THE URL(IDEAL SOLUTION! REAL WORLD - THIS IS HOW IT WORKS!)
+exports.setTourUserIds = (req,res,next) =>{
+
     if(!req.body.tour) req.body.tour = req.params.tourId;
     if(!req.body.user) req.body.user = req.user.id
 
+    next();
 
-    const review = await Review.create(req.body)
+}
 
-    console.log(review); 
+//THE ABOVE M.W - MAKE IT POSSIBLE TO USE factory.createOne!
+exports.createReview = factory.createOne(Review)
 
-    res.status(201).json({
-        status:'success', 
-        data:{
-            review
-        }
-    })
+exports.deleteReview = factory.deleteOne(Review)
+exports.updateReview  = factory.updateOne(Review)
 
-})
+//BEFORE REFACTORING TO THE createOne Factory
+// exports.createReview= catchAsync(async (req,res,next) =>{
+
+    
+//     //REFACTOR TO THE setTourUserIds - above - m.w - to be able the createOne Factory
+//     // if(!req.body.tour) req.body.tour = req.params.tourId;
+//     // if(!req.body.user) req.body.user = req.user.id
+
+//     const review = await Review.create(req.body)
+
+//     console.log(review); 
+
+//     res.status(201).json({
+//         status:'success', 
+//         data:{
+//             review
+//         }
+//     })
+
+// })
 
 //GREAT!
 exports.getAllReviews = catchAsync(async (req,res,next)=>{
@@ -51,4 +71,3 @@ exports.getAllReviews = catchAsync(async (req,res,next)=>{
 })
 
 
-exports.deleteReview = factory.deleteOne(Review)

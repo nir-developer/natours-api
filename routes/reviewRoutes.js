@@ -22,11 +22,14 @@ reviewRouter
     .post(
         authController.protect, 
         authController.restrictTo('user') ,
+        //THE BELOW M.W - MADE IT POSSIBLE TO REFACTOR TO createOne Factory
+        reviewController.setTourUserIds,
         reviewController.createReview
        )
     
 
-       
+
+ //UPDATE AND DELETE REVIEWS: RESTRICTED TO USER AND ADMIN
 reviewRouter
 .route('/:id')
 .delete(authController.protect, 
@@ -34,5 +37,8 @@ reviewRouter
         authController.restrictTo('user') ,
         reviewController.deleteReview
     )
+.patch(
+    reviewController.updateReview)
+
 
 module.exports = reviewRouter;

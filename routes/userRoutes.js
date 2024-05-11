@@ -51,6 +51,9 @@ router.delete('/deleteMe', authController.protect, userController.deleteMe)
         authController.protect,
         authController.restrictTo('admin'),
         userController.deleteUser)
+    .patch(
+        userController.updateUser
+    )
  
 
 

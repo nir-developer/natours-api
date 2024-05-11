@@ -12,6 +12,14 @@ const filterObj = (obj, ...allowedFields) =>{
     return newObj;
 }
 
+
+//FOR EFFECTIVELY DELETE USER FROM DB - BY THE ADMIN!
+exports.deleteUser = factory.deleteOne(User)
+
+//IMPORTANT!!!!! DO NOT UPDATE PASSWORDS WITH THIS!(SINCE PASSWORD UPDATE IS IMPLEMENTED IN A DIFFERENT FUNCTIONALITY THAT USES PRE-SAVE M.W !!)
+exports.updateUser = factory.updateOne(User); 
+
+
 ///NOTE: AS FOR ALL USER WITH ANY ROLE - THE PASSWORD IS HASHED IN THE USER MODEL PRE-SAVE M.W!!
 exports.createUser = catchAsync(async(req,res,next) =>{
 
@@ -90,8 +98,7 @@ exports.deleteMe = catchAsync(async(req,res,next) =>{
 
 
 
-//FOR EFFECTIRLVY DELETE USER FROM DB - BY THE ADMIN!
-exports.deleteUser = factory.deleteOne(User)
+
 
 
 

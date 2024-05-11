@@ -8,7 +8,9 @@ const factory = require('./handlerFactory')
 // const catchAsync = fn => (req,res,next) => fn(req,res,next).catch(next)
 
 
-
+exports.deleteTour = factory.deleteOne(Tour)
+exports.updateTour = factory.updateOne(Tour)
+exports.createTour = factory.createOne(Tour)
 
 exports.aliasTopTours = (req,res,next) =>{
 
@@ -59,20 +61,20 @@ exports.getAllTours =  catchAsync(async (req,res,next)=>
 
 )
 
-exports.createTour = catchAsync(async (req,res,next) =>{
+// exports.createTour = catchAsync(async (req,res,next) =>{
 
-    console.log('INSIDE createTour - id guides array ')
-    console.log(req.body.guides)
-     const newTour = await Tour.create(req.body); 
+//     console.log('INSIDE createTour - id guides array ')
+//     console.log(req.body.guides)
+//      const newTour = await Tour.create(req.body); 
 
-     res.status(201).json({
-        status:'success',
-        data:{
-            tour:newTour
-        }
+//      res.status(201).json({
+//         status:'success',
+//         data:{
+//             tour:newTour
+//         }
           
-     })
-})
+//      })
+// })
 
 
 //IMPORTANT - JONAS WRONG -I UPDATED THE BELOW CODE OF JONAS (Q.A) - ADDED POPULATE - IN LECTURE 157 -Virtual  Populate the tours - to get revies
@@ -100,45 +102,48 @@ exports.findTour = catchAsync(async (req,res,next) =>{
   
 })
 
-exports.updateTour = catchAsync( async (req,res,next) =>{
-    
-    //const tour = await Tour.findById(req.params.id)
-    const tour  = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-        new:true, 
-        runValidators:true
-    })
 
 
-    if(!tour) 
-        return next( new AppError('No tour found with that ID', 404))
+//BEFORE REFACTORING THE FACTORY - updateOne!!
+// exports.updateTour = catchAsync( async (req,res,next) =>{
     
-    res.status(200).json({
-    status:'success', 
-        data:{
-            tour
-        }
-    })
+//     //const tour = await Tour.findById(req.params.id)
+//     const tour  = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//         new:true, 
+//         runValidators:true
+//     })
+
+
+//     if(!tour) 
+//         return next( new AppError('No tour found with that ID', 404))
+    
+//     res.status(200).json({
+//     status:'success', 
+//         data:{
+//             tour
+//         }
+//     })
     
     
       
-            //WILL NOT TRIGGER THE PRE-SAVE M.W!(only .save() and .create() !)
-            // const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, 
-            //     {
-            //         new:true, 
-            //         runValidators:true
-            //     }) 
-        //MONGO DB SYNTAX
-        //Tour.findOne({_id:" req.params.id}"})
+//             //WILL NOT TRIGGER THE PRE-SAVE M.W!(only .save() and .create() !)
+//             // const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, 
+//             //     {
+//             //         new:true, 
+//             //         runValidators:true
+//             //     }) 
+//         //MONGO DB SYNTAX
+//         //Tour.findOne({_id:" req.params.id}"})
         
-        //NOTE HERE!! ERROR HANDLING!
-        //if(!tour) throw new Error()
+//         //NOTE HERE!! ERROR HANDLING!
+//         //if(!tour) throw new Error()
 
    
-})
+// })
 
 //NOTE - THE BELOW  FUNCTION IS CALLED IMMEDIATLY - TOP LEVEL CODE : The return function is stored in the deleteOne function(variable) 
 //UNTIL A REQUEST IS COMING - AND THEN EXPRESS WILL CALL THE CREATED FUNCTION RETURNED BY THE FACTORY!
-exports.deleteTour = factory.deleteOne(Tour)
+
 
 
 
