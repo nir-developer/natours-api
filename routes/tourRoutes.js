@@ -31,14 +31,20 @@ tourRouter.use('/:tourId/reviews', reviewRouter)
 
 
 //ALIAS ROUTE - FOR THE USER TO GET POPULAR RESOURCE WITH EASY TO REMEMBER URL AND PREPOPULATED QUERY STRINGS! 
+//PUBLIC 
 tourRouter.get('/top-5-cheap',tourController.aliasTopTours, tourController.getAllTours)
 
 
 //////////////////
-//STATS ROUTE - AGGREGATION PIPELINE
+//STATS ROUTE - AGGREGATION PIPELINE - PUBLIC TO ALL
 tourRouter.route('/tour-stats').get(tourController.getTourStats);
 
-tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+//ENABLE ONLY FOR THE EMPLOYEES(not normal users!)
+tourRouter.route('/monthly-plan/:year')
+    .get(
+        authController.protect, 
+        authController.restrictTo('guide' ,'lead-guide', 'admin'),
+        tourController.getMonthlyPlan);
 
 
 ///////////////
@@ -46,11 +52,14 @@ tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 tourRouter.route('/')
 ///PUBLIC ROUTES!!
 .get( tourController.getAllTours) 
-.post(authController.protect, tourController.createTour) 
+.post(authController.protect,authController.restrictTo('admin', 'lead-guide') ,tourController.createTour) 
 
 tourRouter.route("/:id")
     .get(tourController.getTour)
-    .patch(tourController.updateTour)
+    .patch(authController.protect,
+        authController.restrictTo('admin', 'lead-guide') ,
+        tourController.updateTour)
+    
     //restrictTo "m.w" :a wrapper function takes roles args - and returns my m.w (template) that takes the roles (since can not pass to a m.w parameters)
     .delete( 
          authController.protect,

@@ -11,9 +11,8 @@ router.post('/login', authController.login)
 
 
 
-////////////////
-//PASSWORD RESET ENDPOINTS
-
+////////////////////////////////////////
+//PASSWORD RESET ENDPOINTS - PUBLIC 
 //STEP 1/2(request contains the email - response sends an email with a link that contains the reset token)
 router.post('/forgotPassword', authController.forgotPassword)
 
@@ -24,17 +23,24 @@ router.post('/forgotPassword', authController.forgotPassword)
 router.patch('/resetPassword/:token', authController.resetPassword)
 
 
+/////////////////////////////////////////
+//PROTECTED ROUTES
+//REUSE the protect m.w - by registering it to the 'mini-app' router - for all the below protected routes - instead of adding it to each route!
+router.use(authController.protect)
+
+
+
+
+
 router.patch('/updateMyPassword',authController.protect,  authController.updateMyPassword)
 
+router.patch('/updateMe', userController.updateMe)
 
-router.patch('/updateMe', authController.protect, userController.updateMe)
-
-router.delete('/deleteMe', authController.protect, userController.deleteMe)
+router.delete('/deleteMe', userController.deleteMe)
 
 ///IMPORTANT: MY M.W getMe will "fake" the user id as if it is coming in the URL by the client 
 // so the getUser handler will read it from the URL - as if the client set this id !
 router.get('/me' , 
-    authController.protect, 
     userController.getMe, 
     userController.getUser
 )
@@ -44,23 +50,27 @@ router.get('/:id', userController.getUser)
 
 
 
-//////////////
+/////////////////////////////////////////////
 //REST END POINTS FOR USER MANAGEMENT!!!!!
 // - ONLY FOR ADMIN ROLE USER- LATER!!!!
 //IMPORTANT: I WANT THE ADMING TO BE ABLE DELETING ANY TYPE OF RESOURCE(USER, TOUR ,ETC..)
 
+
+
+
+//ONLY FOR ADMIN 
+router.use(authController.restrictTo('admin'))
+
+
+
  router.route('/' )
- .post(authController.protect, authController.restrictTo('admin'), userController.createUser)
- .get(authController.protect, userController.getAllUsers)
+ .post(userController.createUser)
+ .get( userController.getAllUsers)
 
 
  router.route('/:id')
-    .delete(
-        authController.protect,
-        authController.restrictTo('admin'),
-        userController.deleteUser)
-    .patch(
-        userController.updateUser
+    .delete(userController.deleteUser)
+    .patch(userController.updateUser
     )
  
 
