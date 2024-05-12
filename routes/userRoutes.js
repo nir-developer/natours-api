@@ -31,6 +31,13 @@ router.patch('/updateMe', authController.protect, userController.updateMe)
 
 router.delete('/deleteMe', authController.protect, userController.deleteMe)
 
+///IMPORTANT: MY M.W getMe will "fake" the user id as if it is coming in the URL by the client 
+// so the getUser handler will read it from the URL - as if the client set this id !
+router.get('/me' , 
+    authController.protect, 
+    userController.getMe, 
+    userController.getUser
+)
 
 router.get('/:id', userController.getUser)
 

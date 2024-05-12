@@ -15,6 +15,14 @@ const filterObj = (obj, ...allowedFields) =>{
 }
 
 
+//M.W - inject the logged in user id into the req.params
+//(then the getUser handler will read this id - as if it passed by the client!)
+//the getUser will call the getOne factory - and the id will be available for getOne factory!
+exports.getMe = catchAsync(async(req,res,next)=>{
+    req.params.id = req.user.id;
+    next();
+})
+
 exports.updateMe = catchAsync(async(req,res,next) =>{
 
     //STEP  1: Create error if user POSTs password data
