@@ -78,7 +78,6 @@ userSchema.pre('save',async function(next){
 //USED IN FORGOT-RESET  PASSWORD  FUNCTIONALITY
 userSchema.pre('save', function(next){
 
-   
 
     if(!this.isModified('password') || this.isNew) return next();
 

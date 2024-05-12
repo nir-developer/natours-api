@@ -1,5 +1,9 @@
 //FINALLY : CLI: 
 //node dev-data/data/import-dev-data.js --delete
+const Tour = require('../../models/Tour')
+const User = require('../../models/User')
+const Review = require('../../models/Review')
+
 
 const dotenv = require('dotenv') 
 dotenv.config({path: './config.env'})
@@ -7,8 +11,7 @@ const mongoose = require('mongoose')
 const path = require('path')
 const fs = require('fs')
 //ALWAYS RELATIVE TO THE ROOT FOLDER OF THE PROJECT!
-const Tour = require('../../models/Tour')
-const tourRouter = require('../../routes/tourRoutes')
+
 
 
 //STEP 1: CONNECT TO DB
@@ -23,14 +26,16 @@ mongoose
 
 
   
-   
 
-    const importData = async(tours) =>{
-        try 
-        {
-            await Tour.create(tours)
-            console.log('DEV DATA TOURS STORED IN DB!!');
-        }
+const importData = async(tours) =>{
+   try 
+    {
+        await Tour.create(tours)
+        //MUST DISABLE THE VALIDATION - SINCE WILL WILL FAIL BECAUSE OF THE PASSWORD CONFIRM VALIDATION IN THE SCHEMA!
+        await User.create(users, {validateBeforeSave:false});
+        await Review.create(reviews)
+         console.log('DEV DATA TOURS STORED IN DB!!');
+    }
         catch(err)
         {
             console.log(err)
@@ -47,6 +52,8 @@ const deleteData =async () => {
     {
         //LIKE IN MONGODB - MONGOOSE HAS THIS FUNCTION TO DELETE ALL DOCUMENTS! - deleteMany(with no param) 
         await Tour.deleteMany(); 
+        await User.deleteMany(); 
+        await Review.deleteMany(); 
         console.log(`ALL TOURS DELETED FROM THE TOURS COLLECTION IN DB: `)
     }
     catch(err)
@@ -65,7 +72,8 @@ const deleteData =async () => {
 
 //Tours with embedded locations!
  const tours = JSON.parse(fs.readFileSync(path.join(__dirname, 'tours.json'), 'utf-8'))
-
+const users = JSON.parse(fs.readFileSync(path.join(__dirname, 'users.json'), 'utf-8'))
+const reviews = JSON.parse(fs.readFileSync(path.join(__dirname, 'reviews.json'), 'utf-8'))
 
 
  //CHECK COMMAND LINE THIRD ARG 
