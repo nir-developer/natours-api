@@ -104,7 +104,11 @@ userSchema.pre(/^find/, function(next){
 //INSTANCE METHODS 
 ///////////////////////////////////
 userSchema.methods.correctPassword = async (candidatePassword, userPassword) => {
-    return await bcrypt.compare(candidatePassword, userPassword)
+    console.log(`USER MODEL correctPassword : candidatePassword:${candidatePassword}, 
+    userPassword: ${userPassword }`)
+    const isCorrect = await  bcrypt.compare(candidatePassword, userPassword)
+    console.log('USER MODEL - correctPassword: ' ,isCorrect)
+    return isCorrect;
 }
 
 

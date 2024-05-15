@@ -108,9 +108,10 @@ exports.getAll = Model => catchAsync(async (req,res,next)=>
     //NOTE: ALL THE CHAINS QUERY ARE STORED IN THE features.query
     //IMPORTANT !! IF THERE ARE PRE-FIND M.W - THEY WILL BE EXECUTED NOW!! BEFORE THE AWAIT (EXECUTING THE QUERY
     // const docs = await features.query;
-    const docs = await features.query.explain();
+    //const docs = await features.query.explain();
+    const docs = await features.query;
 
-    
+
         //SEND RESPONSE
         res.status(200).json({
             status:'success', 
