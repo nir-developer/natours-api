@@ -163,7 +163,19 @@ tourSchema.virtual('durationWeeks').get(function(){
     return this.duration / 7; 
 })
 
+//////////////////////////////////////////////
+//INDEXES
+//SINGLE FIELD INDEX(REDUNDANT AFTER THE Compound Index)
+//tourSchema.index({'price':1})
 
+//CREATE A COMPOUND INDEX => #scanned = #returned = 2 (WITHOUT THE INDEX:  2/9)
+tourSchema.index({price:1, ratingsAverage:-1})
+
+//CREATE A SINGLE FIELD INDEX ON THE SLUG - SINCE  LATER I WANT USE THE UNIQUE SLUG TO QUERY THE TOURS
+//THE SLUG WILL BE PROBABLY  THE MOST  QUERIED FIELD!
+tourSchema.index({slug:1})
+
+//////////////////////////////////////////////////////////////
 //VIRTUAL POPULATE - GET ACCESS TO THE REVIEWS - WITHOUT HAVING CHILD REFERENCING ARRAY STORED IN DB
 tourSchema.virtual('reviews', {
     ref:'Review',

@@ -69,10 +69,6 @@ exports.signup = catchAsync(async (req,res,next) =>{
 
 exports.login = catchAsync(async (req,res,next)=>{
     
-    console.log('INSIDE LOGIN SERVER: COOKIES')
-
-    
-    
     //1)CHECK IF PASSWORD AND EMAIL EXISTS IN THE REQUESTS
     const {email, password} = req.body ;
 
@@ -96,12 +92,6 @@ exports.login = catchAsync(async (req,res,next)=>{
 //IMPLEMENTING PROTECTED ROUTES USING EXPRESS M.W - the 4 steps!
 exports.protect = catchAsync(async (req,res,next) =>{
     
-   
-    //console.log('INSIDE PROTECT M.W: cookies:', req.cookies['jwt'])
-
-    console.log('INSIDE PROTECT M.W: cookies:', req.cookies['token'])
-
-
     //OK
     console.log('INSIDE PROTECT M.W: HTTP headers:', req.headers.authorization)
 
