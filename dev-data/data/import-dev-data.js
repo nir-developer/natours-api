@@ -32,9 +32,10 @@ const importData = async(tours) =>{
     {
         await Tour.create(tours)
         //MUST DISABLE THE VALIDATION - SINCE WILL WILL FAIL BECAUSE OF THE PASSWORD CONFIRM VALIDATION IN THE SCHEMA!
-        await User.create(users, {validateBeforeSave:false});
+        //await User.create(users, {validateBeforeSave:false});
+        await User.create(users, {validateBeforeSave:false})
         await Review.create(reviews)
-         console.log('DEV DATA TOURS STORED IN DB!!');
+         console.log('DEV DATA TOURS , REVIEWS, USERS STORED IN DB!!');
     }
         catch(err)
         {
@@ -54,7 +55,7 @@ const deleteData =async () => {
         await Tour.deleteMany(); 
         await User.deleteMany(); 
         await Review.deleteMany(); 
-        console.log(`ALL TOURS DELETED FROM THE TOURS COLLECTION IN DB: `)
+        console.log(`DEV DATA TOURS, REVIEWS, USERS DELETED IN DB!!`)
     }
     catch(err)
     {
