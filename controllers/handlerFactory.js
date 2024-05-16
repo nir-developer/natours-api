@@ -106,11 +106,11 @@ exports.getAll = Model => catchAsync(async (req,res,next)=>
        
 
        //The query contains all the chain I build above - now execute the query:  
-       // const docs = await features.query;
+        const docs = await features.query;
         
         
         //EXPLAIN METHOD: TEST PERFORMANCE OF THE INDEX -  WITH EXPLAIN METHOD
-        const docs = await features.query.explain("executionStats");
+        //const docs = await features.query.explain("executionStats");
     
         //SEND RESPONSE
         res.status(200).json({
