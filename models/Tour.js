@@ -154,8 +154,20 @@ const tourSchema = new mongoose.Schema({
 
 )
 
+////////////////////////////
+//INDEXES
+
+//COMPOUND INDEX:  => GREAT : examined : 3, returned : 3 (WITHOUT THIS INDEX: 3/9 -> BAD!)
+tourSchema.index({price:1, ratingsAverage:-1})
+
+//SINGLE FIELD INDEX 
+tourSchema.index({slug:1})
+//WRONG!!!!!!
+// tourSchema.index({price: {$lt: 1000}, ratingsAverage: {$gt: 4.5}})
 
 
+
+////////////////////////////////////////////////////
 //VIRTUAL PROPERTIES(not persisted!): Convert #days in db to #weeks in the output!
 //get => Will be called each time something returned from db(getter)
 //REGULAR FUNCTION - NOT ARROW - SINCE THE FUNCTION IS AN INSTANCE METHOD ON THE DOC OBJECT
