@@ -41,8 +41,12 @@ const tourSchema = new mongoose.Schema({
         default:4.5 ,
         //min-max :;ON NUMBERS AND DATES!
         min:[1,'Rating must be above 1.0'],
-        max:[5,'Rating must be below 5.0']
-
+        max:[5,'Rating must be below 5.0'],
+        //JONAS (169)SETTER FUNCTION - TRIGGERED WHEN ratingsAverage is set/updated
+        //NOTE THE TRICK - Math.round(4.66667) = 5 - BUT I WANT 4.7
+        set: val => Math.round(val * 10) / 10 
+        //Q.A SOLUTION - USE val.toPrecision(3) - For the case of val = 3.75 - I will get 3.75(Instead of jonas getting 3.8!)
+        //set:val => val.toPrecision(3)
     }, 
     ratingsQuantity:{
         type:Number, 
