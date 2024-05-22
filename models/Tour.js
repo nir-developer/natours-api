@@ -170,6 +170,9 @@ tourSchema.index({slug:1})
 // tourSchema.index({price: {$lt: 1000}, ratingsAverage: {$gt: 4.5}})
 
 
+//GEOSPATIAL INDEX: type = 2dsphere for a REAL earth like sphere (2d for FICTIONAL POINT ON  A2D plain)
+tourSchema.index({startLocation: '2dsphere'})
+
 
 ////////////////////////////////////////////////////
 //VIRTUAL PROPERTIES(not persisted!): Convert #days in db to #weeks in the output!

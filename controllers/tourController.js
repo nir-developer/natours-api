@@ -303,6 +303,37 @@ exports.getMonthlyPlan = catchAsync(async (req,res,next) =>{
     
     })
 
+    //GEO LOCATION: TEST POSTMAN FOR A CLIENT PASSED IT'S LOCATION  IN L.A AND A RADIUS = 400 MI:
+   // {{URL}}natours/api/v1/tours/tours-within/distance/400/center/34.1111745,-118.112491/unit/ml
+    //tours-within/distance/:distance/center:/22,-22/unit/:unit
+    //Not Clear routing(using many query params): tours-within?distance=34&center=23,42&unit=mi
+    exports.getToursWithin = catchAsync(async (req,res,next) =>{
+
+        //GET THE QUERY PARAMS
+        const {distance, latlng, unit} = req.params;
+        const [lat,lng] = latlng.split(',')
+
+        
+        //COMPUTE THE RADIUS
+        const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1
+
+
+        //IF NO LAT,LNG PROVIDED  IN THE REQUIRED FORMAT - THROW
+        if(!lat || !lng) return next(new AppError('Please provide latitude and longitude in the format lat,lng', 400))
+
+
+        //BUILD THE GEO QUERY
+        const tours = await Tour.find({startLocation:{ $geoWithin:{$centerSphere:[[lng,lat],radius ]} }});
+
+
+        res.status(200).json({
+            status:'success', 
+            results:tours.length,
+            data:{
+                data:tours
+            }
+        })
+    })
 
     // exports.getCookies = catchAsync(async (req,res,next)=>{
 

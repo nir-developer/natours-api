@@ -39,6 +39,19 @@ tourRouter.get('/top-5-cheap',tourController.aliasTopTours, tourController.getAl
 //STATS ROUTE - AGGREGATION PIPELINE - PUBLIC TO ALL
 tourRouter.route('/tour-stats').get(tourController.getTourStats);
 
+
+
+/////////////////////////////////////////
+//GEOLOCATION ROUTE 
+//NOT CLEAN - WITH QUERY PARAMS
+//'/tours-within?distance=233&&center=40,45&unit=km'
+tourRouter
+.route('/tours-within/distance/:distance/center/:latlng/unit/:unit')
+.get(tourController.getToursWithin)
+
+
+
+
 //ENABLE ONLY FOR THE EMPLOYEES(not normal users!)
 tourRouter.route('/monthly-plan/:year')
     .get(
