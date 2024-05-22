@@ -33,143 +33,6 @@ exports.getAllTours = factory.getAll(Tour)
 
 
 
-//AFTER REFACTORING TO THE APIFeatures - AND BEFORE REFACTROING TO THE getAll Factory !
-// THIS METHOD WILL BE MUCH CLEANER
-//THIS METHOD JUST BUILD THE INSTANCE CONTAINS ALL THE API-FEATURES - BY CONSTRUCTING AN INSTANCE OF APIFeature using Builder 
-//NO ERROR SHOULD BE THROWN FOR NO RESULTS!
-//NAM RETURNS 204 FOR EMPTY RESULTS JONAS RETURNS 200
-// exports.getAllTours =  catchAsync(async (req,res,next)=>
-// {
- 
-//     console.log('GET ALL TOURS - EXPECT TO GET SKY BLUE COOKIE SET ON THE FIRST M.W!')
-//     console.log(req.cookies)
-//     //EXECUTE QUERY
-//     const features = new APIFeatures(Tour.find(), req.query)
-//         .filter()
-//         .sort()
-//         .paginate();
-       
-
-//     //NOTE: ALL THE CHAINS QUERY ARE STORED IN THE features.query
-//     //IMPORTANT !! IF THERE ARE PRE-FIND M.W - THEY WILL BE EXECUTED NOW!! BEFORE THE AWAIT (EXECUTING THE QUERY
-//     const tours = await features.query;
-
-//         //SEND RESPONSE
-//         res.status(200).json({
-//             status:'success', 
-//             results: tours.length, 
-//             data:{
-//                 tours
-//             }
-//         })
-    
-// }
-
-// )
-
-// exports.createTour = catchAsync(async (req,res,next) =>{
-
-//     console.log('INSIDE createTour - id guides array ')
-//     console.log(req.body.guides)
-//      const newTour = await Tour.create(req.body); 
-
-//      res.status(201).json({
-//         status:'success',
-//         data:{
-//             tour:newTour
-//         }
-          
-//      })
-// })
-
-
-
-//BEFORE REFACTORING TO THE FACTORY - getOne!!
-//IMPORTANT - JONAS WRONG -I UPDATED THE BELOW CODE OF JONAS (Q.A) - ADDED POPULATE - IN LECTURE 157 -Virtual  Populate the tours - to get revies
- // const tour = await Tour.findById(req.params.id)
-// exports.findTour = catchAsync(async (req,res,next) =>{
-    
-//     //MONGOOSE:  Tour.findById(req.params.id): shorthand of Tour.findOne({_id: req.params.id})
-//     //POPULATE THE TOUR WITH THE REFERENCED USERS - AND FILTER OUT THE  USER FIELD NAMES: FORM THE RESULT SET
-//        const tour = await Tour.findById(req.params.id).populate('reviews');
-//         if(!tour) 
-//         return next( new AppError('No tour found with that ID', 404))
-    
-    
-//     res.status(200).json({
-//         status:'success', 
-//         data:{
-//             tour
-//         }
-//     })
-
-
-//     //if(!tour) throw new Error(`tour with id ${req.params.id} not found`)
-//     //USE MY CUSTOMER ERROR CLASS - AND PASS TO EXPRESS M.W TO RETURN THE ERROR RESPONSE
-
-  
-// })
-
-
-
-//BEFORE REFACTORING THE FACTORY - updateOne!!
-// exports.updateTour = catchAsync( async (req,res,next) =>{
-    
-//     //const tour = await Tour.findById(req.params.id)
-//     const tour  = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-//         new:true, 
-//         runValidators:true
-//     })
-
-
-//     if(!tour) 
-//         return next( new AppError('No tour found with that ID', 404))
-    
-//     res.status(200).json({
-//     status:'success', 
-//         data:{
-//             tour
-//         }
-//     })
-    
-    
-      
-//             //WILL NOT TRIGGER THE PRE-SAVE M.W!(only .save() and .create() !)
-//             // const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, 
-//             //     {
-//             //         new:true, 
-//             //         runValidators:true
-//             //     }) 
-//         //MONGO DB SYNTAX
-//         //Tour.findOne({_id:" req.params.id}"})
-        
-//         //NOTE HERE!! ERROR HANDLING!
-//         //if(!tour) throw new Error()
-
-   
-// })
-
-//NOTE - THE BELOW  FUNCTION IS CALLED IMMEDIATLY - TOP LEVEL CODE : The return function is stored in the deleteOne function(variable) 
-//UNTIL A REQUEST IS COMING - AND THEN EXPRESS WILL CALL THE CREATED FUNCTION RETURNED BY THE FACTORY!
-
-
-
-
-//BEFORE REFACTORING THE FACTORY METHOD REFACTORING TO 
-// exports.deleteTour =  catchAsync(async(req,res,next) =>{
-
-//    const tour =  await Tour.findByIdAndDelete(req.params.id)
-
-//    if(!tour) 
-//     return next( new AppError('No tour found with that ID', 404))
-
-
-//     res.status(204).json({
-//         status:'success', 
-//     })
-// })
-
-
 
 //AGGREGATION PIPELINE IMPLEMENTATION USING MONGOOSE
 exports.getTourStats =catchAsync( async(req,res,next) =>{
@@ -331,6 +194,61 @@ exports.getMonthlyPlan = catchAsync(async (req,res,next) =>{
             results:tours.length,
             data:{
                 data:tours
+            }
+        })
+    })
+
+    //FIND ALL DISTANCE FROM ALL TOURS IN DB - FROM A GIVEN POINT BY THE CLIENT(NOT NEED RADIUS LIKE BEFORE!)
+     //-GEOSPATIAL AGGREATION HAS ONLY ONE SGATE - $geoNear! 
+     // AND MUST BE THE FIRST STAGE IN THE PIPELINE!!
+    exports.getDistances = catchAsync(async (req,res,next) =>{
+                    //GET THE QUERY PARAMS
+        const {latlng, unit} = req.params;
+        const [lat,lng] = latlng.split(',')
+
+
+        //CONVERT FROM METERS TO MILE OR KM
+        const multiplier = unit === 'mi' ? 0.000621371 : 0.001
+        
+       
+        //IF NO LAT,LNG PROVIDED  IN THE REQUIRED FORMAT - THROW
+        if(!lat || !lng) return next(new AppError('Please provide latitude and longitude in the format lat,lng', 400))
+        
+        //IMPLEMENT THE CALCULATION - USE THE MODEL PIPELINE MODEL THE AGGREGATE
+        const distances = await  Tour.aggregate([
+           //FIRST STAGE:EOSPATIAL AGGREATION HAS ONLY ONE GEOSPATIAL! - $geoNear AND MUST BE THE FIRST STAGE IN THE PIPELINE!!
+            {
+                $geoNear: {
+                    //$near operation: takes a GEOJSON GEOMETRY OF TYPE 'POINT' : 
+                    //THE DISTANCE WILL BE COMPUTED BETWEEN THE POINT OBJECT PASSED OT $near - AND ALL THE START LOCAIONS 
+                    near:{
+                        //GEOJSON GEOMETRY - POINT in this case!!
+                       
+                            type:'Point', 
+                            coordinates:[lng * 1 ,lat * 1]//CONVERT TO NUMBERS
+                    },
+                        //GEOSPATIAL PROPERTY: NAME OF THE FIELD THAT WILL BE RETURN THE OUTPUT
+                        distanceField:'distance',
+                        //USE DISTANCE MULTIPLIER PROPERTY OF THE $geoNear operator:
+                        distanceMultiplier:multiplier
+                        
+                    }
+                }  ,
+
+                //SECOND STAGE : PROJECT - RETURN ONLY THE distances and the name of the tour
+                {
+                $project:{
+                    distance:1,
+                    name:1
+                }
+                }
+                
+        ])
+
+        res.status(200).json({
+            status:'success', 
+            data:{
+                data:distances
             }
         })
     })

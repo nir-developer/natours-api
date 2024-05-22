@@ -50,6 +50,11 @@ tourRouter
 .get(tourController.getToursWithin)
 
 
+//FIND ALL DISTANCE FROM ALL TOURS IN DB - FROM A GIVEN POINT BY THE CLIENT(NOT NEED RADIUS LIKE BEFORE!)
+tourRouter
+.route('/distances/:latlng/unit/:unit')
+.get(tourController.getDistances)
+
 
 
 //ENABLE ONLY FOR THE EMPLOYEES(not normal users!)
