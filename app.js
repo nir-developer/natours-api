@@ -131,7 +131,11 @@ app.use((req,res,next) =>{
 ///- for rendering HTML - use GET
 // - NO NEED TO SPECIFY THE FULL PATH - JUST THE TEMPLATE NAME WITH NO EXTENSION - EXPRESS WILL GO TO THE views folder!
 app.get('/',(req,res)=>{
-    res.status(200).render('base')
+    res.status(200).render('base',{
+        tour:'The Forest Hiker', 
+        user:'Nir'
+    })
+
 })
 
 
