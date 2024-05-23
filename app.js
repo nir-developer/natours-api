@@ -8,6 +8,7 @@ const globalErrorHandler = require('./controllers/errorController')
 
 
 
+
 //NOTE - I SET THE COOKIE-PARSER AND CORS (HE DID NOT) FOR PARSING COOKIES THE BROWSER SEND -  ON LECTURE 142 - SENDING JWT VIA COOKIE
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
@@ -24,14 +25,28 @@ const xss = require('xss-clean')
 const hpp = require('hpp');
 
 
+const path = require('path')
+
 
 
 
 const app = express();   
 
+
+////////////////////////////////
+//PUG TEMPLATE ENGINE SETUP:
+app.set('view engine', 'pug')
+app.set('views', path.join(__dirname, 'views'))
+
+
 /////////////////////////////////////////////////////////
 //GLOBAL M.W 
 ////////////////////////////////////////
+
+
+//SERVING STATIC FILES 
+ app.use(express.static(path.join(__dirname, 'public')))
+
 
 //Set security  HTTP  headers
 app.use(helmet())
@@ -98,8 +113,7 @@ app.use(cookieParser())
 app.use((req,res,next) =>{
     req.requestTime = new Date().toISOString(); 
     
-    //SET A COOKIE ON THE RESPONSE
-    //res.cookie('sky', 'blue')
+    
     next();
 })
 
@@ -109,8 +123,19 @@ app.use((req,res,next) =>{
 
 
 
-///////////////////////////////////
-//END POINTS 
+
+
+
+////////////////////////////////
+//WEB SITES ROUTES 
+///- for rendering HTML - use GET
+// - NO NEED TO SPECIFY THE FULL PATH - JUST THE TEMPLATE NAME WITH NO EXTENSION - EXPRESS WILL GO TO THE views folder!
+app.get('/',(req,res)=>{
+    res.status(200).render('base')
+})
+
+
+//API END POINTS 
 app.use('/natours/api/v1/tours', tourRouter)
 app.use('/natours/api/v1/users/', userRouter)
 app.use('/natours/api/v1/reviews', reviewRouter)
