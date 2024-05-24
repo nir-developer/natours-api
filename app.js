@@ -1,10 +1,10 @@
 //MY ROUTERS
-const tourRouter = require('./routes/tourRoutes')
-const userRouter = require('./routes/userRoutes')
-const testRouter = require('./routes/testRoutes')
-const reviewRouter = require('./routes/reviewRoutes')
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
+const tourRouter = require('./routes/tourRoutes')
+const userRouter = require('./routes/userRoutes')
+const reviewRouter = require('./routes/reviewRoutes')
+const viewRouter = require('./routes/viewRoutes')
 
 
 
@@ -119,24 +119,12 @@ app.use((req,res,next) =>{
 
 
 
-
-
-
-
-
-
-
 ////////////////////////////////
-//WEB SITES ROUTES 
-///- for rendering HTML - use GET
-// - NO NEED TO SPECIFY THE FULL PATH - JUST THE TEMPLATE NAME WITH NO EXTENSION - EXPRESS WILL GO TO THE views folder!
-app.get('/',(req,res)=>{
-    res.status(200).render('base',{
-        tour:'The Forest Hiker', 
-        user:'Nir'
-    })
+//END POINTS - AND WEB SITES API
+/////////////////////////////////////////////////
 
-})
+///MOUNT THE VIEWS ON THE ROOT URL!!(The overview page)
+app.use('/', viewRouter)
 
 
 //API END POINTS 
@@ -146,11 +134,6 @@ app.use('/natours/api/v1/reviews', reviewRouter)
 
 
 
-
-
-//TESTS END POINTS - TEST COOKIES ON JS CLIENT
-app.use('/natours/api/v1/tests/', testRouter)
-app.use('/natours/api/v1/tests/', testRouter)
 
 
 
