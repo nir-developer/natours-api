@@ -1,13 +1,21 @@
-
+const Tour = require('../models/Tour')
 const catchAsync = require('../utils/catchAsync')
 
 const appError = require('../utils/appError')
 
 
 exports.getOverview = catchAsync(async(req,res,next) =>{
-    console.log('getOverview Called!')
+
+    //1) GET TOURS FROM DB
+    const tours = await Tour.find(); 
+
+    //2) Build the template 
+
+    //3) Render this template using data from 1
     res.status(200).render('overview', {
-        title: 'XXX'
+        title: 'All Tours', 
+        tours
+
     })
 
 })
