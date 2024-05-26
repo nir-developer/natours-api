@@ -20,10 +20,28 @@ exports.getOverview = catchAsync(async(req,res,next) =>{
 
 })
 
+//IMPORTANT - POPULATE THE REVIEWS HERE IN THE CONTROLLER - NOT IN PRE FIND M.W IN THE TOUR SCHEMA
+//SINCE THE API SHOULD NOT PRE FETCH ALL REVIEWS OF THE TOUR
 exports.getTour = catchAsync( async(req,res,next)=>{
-    console.log('getTour View')
+    
+    console.log('INSIDE getTour')
+    console.log(req.params)
+
+     //STEP 1  GET TOUR DATA FROM COLLECTION - INCLUDING IT'S REVIEWS AND TOUR-GUIDES
+    //POPULATE THE REVIEWS(THE tour-guides ARE POPULATED IN THE SCHEMA ALREADY USING THE PRE-FIND M.W)
+    const tour = await Tour.findOne({slug: req.params.slug})
+        .populate({path:'reviews', fields:'review rating user'})
+
+
+    console.log(tour)
+   
+   
+
+    //STEP 2: BUILD A TEMPLATE
+    //STEP 3: RENDER THAT TEMPLATE USING TOUR DATA FROM STEP 1
     res.status(200).render('tour', {
-        title:'Exciting tours for adventurous people'
+        title:'Exciting tours for adventurous people',
+        tour
 
     })
     

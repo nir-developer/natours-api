@@ -261,9 +261,16 @@ tourSchema.pre(/^find/, function(next){
         select:'-__v -passwordChangedAt'
     })
 
+    //184- CHALLENGE -FOR  RENDERING THE ASSOCIATED REVIEWS DATA
+    // this.populate({
+    //     path:'reviews',
+    //     select:'-__v -passwordChangedAt'
+    // })
+
 
     next(); 
 })
+
 
 //POST FIND M.W 
 tourSchema.post(/^find/, function(docs, next) {

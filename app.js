@@ -135,9 +135,6 @@ app.use('/natours/api/v1/reviews', reviewRouter)
 
 
 
-
-
-
 //ADMIN ROUTES: 
 
 

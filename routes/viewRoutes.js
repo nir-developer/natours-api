@@ -9,13 +9,9 @@ const router = express.Router();
 router.get('/', viewsController.getOverview)
 
 
-router.get('/overview', (req,res) =>{
-    res.status(200).render('overview', {
-        title: 'XXX'
-    })
-})
 
-router.get('/tour', viewsController.getTour)
+//BASED ON THE URL IN THE OVERVIEW PAGE ON THE BUTTON LINK!
+router.get('/tour/:slug', viewsController.getTour)
 
 
 module.exports = router;
