@@ -78,10 +78,7 @@ const tourSchema = new mongoose.Schema({
         type:String ,
         trim:true
     }, 
-    imageCover:{
-        type:String, 
-        required:true
-    } , 
+   
     imageCover:{
         type:String, 
         required:[true, 'A tour must have a cover image']
@@ -93,7 +90,6 @@ const tourSchema = new mongoose.Schema({
         default:Date.now(),
         //EXCLUDE THIS FIELD FROM THE SCEMA - SO USER CAN NOT SEE IF TOUR IS OUTDATED
         select:false
-
     }, 
     startDates:[Date], 
     //SECRET TOUR - TO BE FETCHED BY PRE FIND M.W!
@@ -139,6 +135,14 @@ const tourSchema = new mongoose.Schema({
         ref:'User'
        }
     ]
+    /**
+     * guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+      }
+    ]
+     */
 
     //THE EMBEDDING SOLUTION - JUST FOR DEMO!!
     //DO I NEED TO ADD IT - OR LET IT BE CREATED LATER WHEN ADDING GUIDES IN THE REQUEST??
@@ -252,6 +256,18 @@ tourSchema.pre(/^find/, async function(next) {
 })
 
 
+/**
+ * 
+tourSchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt'
+  });
+
+  next();
+});
+
+ */
 //MAKE ALL THE QUERIES (findXXX - to populate the users into the tour)
 tourSchema.pre(/^find/, function(next){
 
@@ -261,7 +277,9 @@ tourSchema.pre(/^find/, function(next){
         select:'-__v -passwordChangedAt'
     })
 
-    //184- CHALLENGE -FOR  RENDERING THE ASSOCIATED REVIEWS DATA
+    console.log('PRE FIND M.W - GUIDES OF THIS TOUR:')
+    console.log(this.guides)
+    //184- CHALLENGE -FOR  RENDERING THE ASSOCIATED REVIEWS DATA - NOT HERE !POPULATE IN THE CONTROLLER!!
     // this.populate({
     //     path:'reviews',
     //     select:'-__v -passwordChangedAt'

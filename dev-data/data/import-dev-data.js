@@ -1,23 +1,19 @@
-//FINALLY : CLI: 
-//node dev-data/data/import-dev-data.js --delete
-const Tour = require('../../models/Tour')
-const User = require('../../models/User')
-const Review = require('../../models/Review')
+const fs = require('fs');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const Tour = require('./../../models/Tour');
+const Review = require('./../../models/Review');
+const User = require('./../../models/User');
 
+dotenv.config({ path: './config.env' });
 
-const dotenv = require('dotenv') 
-dotenv.config({path: './config.env'})
-const mongoose = require('mongoose')
-const path = require('path')
-const fs = require('fs')
-//ALWAYS RELATIVE TO THE ROOT FOLDER OF THE PROJECT!
+// const DB = process.env.DATABASE.replace(
+//   '<PASSWORD>',
+//   process.env.DATABASE_PASSWORD
+// );
 
-
-
-//STEP 1: CONNECT TO DB
-//const DB = process.env.DB_ATLAS
 const DB = process.env.DB_COMPASS
-console.log(DB)
+
 // CONNECT TO DB  - TOP LEVEL!
 mongoose
 .connect(DB) 
@@ -25,69 +21,50 @@ mongoose
 .catch(err => console.log(err.message))
 
 
-  
+mongoose
+  .connect(DB, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false
+  })
+  .then(() => console.log('DB connection successful!'));
 
-const importData = async(tours) =>{
-   try 
-    {
-        await Tour.create(tours)
-        //MUST DISABLE THE VALIDATION - SINCE WILL WILL FAIL BECAUSE OF THE PASSWORD CONFIRM VALIDATION IN THE SCHEMA!
-        //await User.create(users, {validateBeforeSave:false});
-        await User.create(users, {validateBeforeSave:false})
-        await Review.create(reviews)
-         console.log('DEV DATA TOURS , REVIEWS, USERS STORED IN DB!!');
-    }
-        catch(err)
-        {
-            console.log(err)
-        }
+// READ JSON FILE
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
+const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'));
+const reviews = JSON.parse(
+  fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8')
+);
 
-         //HARD TERMINATION - THAT FINE SINCE I RUN ONLY THIS SCRIPT - NOT THE APP..
-         process.exit();
-    }
+// IMPORT DATA INTO DB(MUST IMPORT USERS BEFORE THEIR PARENT TOURS)
 
+const importData = async () => {
+  try {
+    await User.create(users, { validateBeforeSave: false });
+    await Tour.create(tours);
+    await Review.create(reviews);
+    console.log('Data successfully loaded!');
+  } catch (err) {
+    console.log(err);
+  }
+  process.exit();
+};
 
-//DELETE ALL TOUR DOCUMENTS FROM THE TOURS COLLECTION IN DB
-const deleteData =async () => {
-    try 
-    {
-        //LIKE IN MONGODB - MONGOOSE HAS THIS FUNCTION TO DELETE ALL DOCUMENTS! - deleteMany(with no param) 
-        await Tour.deleteMany(); 
-        await User.deleteMany(); 
-        await Review.deleteMany(); 
-        console.log(`DEV DATA TOURS, REVIEWS, USERS DELETED IN DB!!`)
-    }
-    catch(err)
-    {
-        console.log(err.message)
-    }
-        //HARD TERMINATION - THAT FINE SINCE I RUN ONLY THIS SCRIPT - NOT THE APP..
-         process.exit();
+// DELETE ALL DATA FROM DB( MUST DELETE USERS BEFORE THEIR PARENT TOURS!)
+const deleteData = async () => {
+  try {
+    await User.deleteMany();
+    await Tour.deleteMany();
+    await Review.deleteMany();
+    console.log('Data successfully deleted!');
+  } catch (err) {
+    console.log(err);
+  }
+  process.exit();
+};
+
+if (process.argv[2] === '--import') {
+  importData();
+} else if (process.argv[2] === '--delete') {
+  deleteData();
 }
- 
-
-
-
-//READ TOURS OBJECT FROM THE JSON FILE - SYNC!
-//  const tours = JSON.parse(fs.readFileSync(path.join(__dirname, 'tours-simple.json'), 'utf-8'))
-
-//Tours with embedded locations!
- const tours = JSON.parse(fs.readFileSync(path.join(__dirname, 'tours.json'), 'utf-8'))
-const users = JSON.parse(fs.readFileSync(path.join(__dirname, 'users.json'), 'utf-8'))
-const reviews = JSON.parse(fs.readFileSync(path.join(__dirname, 'reviews.json'), 'utf-8'))
-
-
- //CHECK COMMAND LINE THIRD ARG 
-if(process.argv[2] === '--import') importData(tours) 
-
-else if(process.argv[2] === '--delete') deleteData(); 
-
-
-
-
-//OK
-//deleteData();
-//importData(tours); 
-
-
-
