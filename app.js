@@ -48,8 +48,45 @@ app.set('views', path.join(__dirname, 'views'))
  app.use(express.static(path.join(__dirname, 'public')))
 
 
-//Set security  HTTP  headers
-app.use(helmet())
+//app.use(helmet())
+
+//Q.A - CONFIGURATION FOR LEALET CONTENT SECURITY POLICY
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                'script-src': [
+                    "'self'",
+                    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+                ],
+                'style-src': [
+                    "'self'",
+                    'https://*.googleapis.com',
+                    'https://unpkg.com',
+                ],
+                'img-src': [
+                    "'self'",
+                    'data:',
+                    'https://*.openstreetmap.org',
+                    'https://unpkg.com',
+                ],
+               
+            },
+        },
+    })
+)
+
+// app.use(
+//   helmet.contentSecurityPolicy({
+//     useDefaults: true,
+//     directives: {
+//       "script-src": ["'self'", "https://unpkg.com"],
+//       "style-src": ["'self'", "https://unpkg.com"],
+//       "img-src": ["'self'", "https://{s}.tile.openstreetmap.org"],
+//     },
+//   })
+// );
+
 
 //Development logging
 if(process.env.NODE_ENV==='development' || process.env.NODE_ENV==='test') 

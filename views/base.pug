@@ -1,14 +1,17 @@
 doctype html
 html(lang="en")
-  head
+  block head
     //-RESPONSIVE - META
     meta(charset='UTF-8')
     meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title Natours | #{title} 
     //- URL FOR ALL  STATIC ASSETS MUST BE A RELATIVE PATH - TO THE HOSTNAME (127.0.0.1) JUST LIKE THE TOUR DETAILS LINK
     link(rel='stylesheet' href='/css/style.css')
+
+    //- LEAFLET
+    link(rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="")
     link(rel='shortcut icon' type='image/png' href='/img/favicon.png')
     link(href='https://fonts.googleapis.com/css?family=Lato:300,300i,700' rel='stylesheet')
-    title Natours | #{title} 
 
 
 
@@ -20,9 +23,10 @@ html(lang="en")
     block content
       h1 This is a place holder heading
 
-  
-
+    //-FOOTER
     include _footer
+
+    //- script(src='/js/leaflet.js', type='module')
 
 
 

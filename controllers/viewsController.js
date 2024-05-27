@@ -40,7 +40,7 @@ exports.getTour = catchAsync( async(req,res,next)=>{
     //STEP 2: BUILD A TEMPLATE
     //STEP 3: RENDER THAT TEMPLATE USING TOUR DATA FROM STEP 1
     res.status(200).render('tour', {
-        title:'Exciting tours for adventurous people',
+        title:`Natours | ${tour.name}`,
         tour
 
     })
