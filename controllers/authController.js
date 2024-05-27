@@ -96,20 +96,27 @@ exports.login = catchAsync(async (req,res,next)=>{
 //IMPLEMENTING PROTECTED ROUTES USING EXPRESS M.W - the 4 steps!
 exports.protect = catchAsync(async (req,res,next) =>{
     
-    //OK
-    console.log('INSIDE PROTECT M.W: HTTP headers:', req.headers.authorization)
+
 
     let token;
 
-
-   
     //STEP 1:  Getting token from request.headers object and check if it's there(Express make it lower case!)
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
     {
         token = req.headers.authorization.split(' ')[1]; 
     }
+    //CHECK FOR THE JWT COOKIE - FOR WEBSITE RENDERING 
+    else if(req.cookies.jwt)
+    {
+        //GREAT!!!
+        // console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        // console.log('THERE IS A JWT COOKIE!!!!!!')
+        token = req.cookies.jwt
+    }
     
     
+    console.log('PROTECT - THE TOKEN:')
+    console.log(token)
 
     if(!token) return next(new AppError('You are not logged in! Please log in to get access.', 401))
  

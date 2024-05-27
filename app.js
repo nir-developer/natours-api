@@ -5,17 +5,22 @@ const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const reviewRouter = require('./routes/reviewRoutes')
 const viewRouter = require('./routes/viewRoutes')
+const crypto = require('crypto');
 
 
 
 
 //NOTE - I SET THE COOKIE-PARSER AND CORS (HE DID NOT) FOR PARSING COOKIES THE BROWSER SEND -  ON LECTURE 142 - SENDING JWT VIA COOKIE
-const cookieParser = require('cookie-parser')
 const cors = require('cors')
 
 const express = require('express')
-const bodyParser = require('body-parser')
 const morgan = require('morgan')
+
+
+//PARSE THE DATA FROM THE REQ BODY  ,THE SECOND FROM THE REQ.COOKIE
+const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
+
 
 //SECURITY M.W
 const rateLimit = require('express-rate-limit')
@@ -44,48 +49,52 @@ app.set('views', path.join(__dirname, 'views'))
 ////////////////////////////////////////
 
 
+ //CHAT GPT ! SOLUTION FOR THE ERROR ON THE CLIENT 
+ //ADD THE BELOW M.W & AND CONFIGURE HELMET TO HANDLE Content Security Policy !!
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString('hex');
+  next();
+});
+
+// Customize Helmet's Content Security Policy
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      "default-src": ["'self'"],
+      "script-src": [
+        "'self'", 
+        "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", 
+        "https://cdn.jsdelivr.net", 
+        (req, res) => `'nonce-${res.locals.nonce}'`
+      ],
+      "style-src": [
+        "'self'", 
+        "https://unpkg.com", 
+        "https://fonts.googleapis.com", 
+        "'unsafe-inline'"
+      ],
+      "img-src": [
+        "'self'", 
+        "data:", 
+        "https://*.tile.openstreetmap.org"
+      ],
+      "connect-src": [
+        "'self'", 
+        "https://*.tile.openstreetmap.org"
+      ],
+      "font-src": [
+        "'self'", 
+        "https://fonts.gstatic.com"
+      ],
+    },
+  })
+);
+
+
+
 //SERVING STATIC FILES 
  app.use(express.static(path.join(__dirname, 'public')))
-
-
-//app.use(helmet())
-
-//Q.A - CONFIGURATION FOR LEALET CONTENT SECURITY POLICY
-app.use(
-    helmet({
-        contentSecurityPolicy: {
-            directives: {
-                'script-src': [
-                    "'self'",
-                    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-                ],
-                'style-src': [
-                    "'self'",
-                    'https://*.googleapis.com',
-                    'https://unpkg.com',
-                ],
-                'img-src': [
-                    "'self'",
-                    'data:',
-                    'https://*.openstreetmap.org',
-                    'https://unpkg.com',
-                ],
-               
-            },
-        },
-    })
-)
-
-// app.use(
-//   helmet.contentSecurityPolicy({
-//     useDefaults: true,
-//     directives: {
-//       "script-src": ["'self'", "https://unpkg.com"],
-//       "style-src": ["'self'", "https://unpkg.com"],
-//       "img-src": ["'self'", "https://{s}.tile.openstreetmap.org"],
-//     },
-//   })
-// );
 
 
 //Development logging
@@ -149,8 +158,10 @@ app.use(cookieParser())
 //TEST FIRST GENERAL EXPRESS M.W
 app.use((req,res,next) =>{
     req.requestTime = new Date().toISOString(); 
-    
-    
+
+    //TEST INCOMING COOKIES 
+    console.log('TEST M.W (FIRST M.W) cookies:')
+    console.log(req.cookies) 
     next();
 })
 

@@ -1,3 +1,4 @@
+const authController = require('../controllers/authController')
 const viewsController = require('../controllers/viewsController')
 
 const express = require('express')
@@ -11,7 +12,7 @@ router.get('/', viewsController.getOverview)
 
 
 //BASED ON THE URL IN THE OVERVIEW PAGE ON THE BUTTON LINK!
-router.get('/tour/:slug', viewsController.getTour)
+router.get('/tour/:slug',authController.protect, viewsController.getTour)
 
 ////////////////////////
 //LOGIN ROUTES

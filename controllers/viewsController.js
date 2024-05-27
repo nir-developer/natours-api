@@ -24,9 +24,7 @@ exports.getOverview = catchAsync(async(req,res,next) =>{
 //SINCE THE API SHOULD NOT PRE FETCH ALL REVIEWS OF THE TOUR
 exports.getTour = catchAsync( async(req,res,next)=>{
     
-    console.log('INSIDE getTour')
-    console.log(req.params)
-
+    
      //STEP 1  GET TOUR DATA FROM COLLECTION - INCLUDING IT'S REVIEWS AND TOUR-GUIDES
     //POPULATE THE REVIEWS(THE tour-guides ARE POPULATED IN THE SCHEMA ALREADY USING THE PRE-FIND M.W)
     const tour = await Tour.findOne({slug: req.params.slug})
