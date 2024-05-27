@@ -33,10 +33,6 @@ exports.getTour = catchAsync( async(req,res,next)=>{
         .populate({path:'reviews', fields:'review rating user'})
 
 
-    console.log(tour)
-   
-   
-
     //STEP 2: BUILD A TEMPLATE
     //STEP 3: RENDER THAT TEMPLATE USING TOUR DATA FROM STEP 1
     res.status(200).render('tour', {
@@ -46,3 +42,10 @@ exports.getTour = catchAsync( async(req,res,next)=>{
     })
     
 })
+
+//NOT ASYNC?? JUST SERVE THE TEMPLATE!
+exports.getLogin = (req,res) => {
+    res.status(200).render('login', {
+        title:`Log into your account`
+    })
+}
