@@ -96,8 +96,6 @@ exports.login = catchAsync(async (req,res,next)=>{
 //IMPLEMENTING PROTECTED ROUTES USING EXPRESS M.W - the 4 steps!
 exports.protect = catchAsync(async (req,res,next) =>{
     
-
-
     let token;
 
     //STEP 1:  Getting token from request.headers object and check if it's there(Express make it lower case!)
@@ -141,8 +139,49 @@ exports.protect = catchAsync(async (req,res,next) =>{
 
      next();
 
-
 }
+)
+
+
+//ONLY FOR RENDERING PAGES - NO ERROR!
+exports.isLoggedIn = catchAsync(async (req,res,next) =>{
+    
+    console.log('isLoggedIn M.W')
+    console.log(`req.cookies.jwt : `, req.cookies.jwt)
+   
+
+    if(req.cookies.jwt)
+    {
+        //1)VERIFY TOKEN(IN THE COOKIE)
+        const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt, 
+        process.env.JWT_SECRET); 
+            
+        //2) Check if user still exists  -IF NOT - DONT THROW! INSTEAD MOVE ON TO NEXT M.W
+        const currentUser = await User.findById(decoded.id)
+        if(!currentUser) return next()
+
+         //3) CHECK IF USER HAS RECENTLY CHANGED HIS PASSWORD(AFTER THE JWT WAS ISSUED)
+        if(currentUser.changedPasswordAfter(decoded.iat))
+        {
+            return next();
+         //return next(new AppError('User recently changed password! Please log in again', 401))
+        }
+            
+        //1,2,3 =>  THERE IS A LOGGED IN USER!!!!!
+        // SINCE JWT VERIFIED &  USER EXISTS  &  PASSWORD HAS NOT BEEN CHANGED RECENTLY
+        //SET THE USER AS  LOCALS  - TO BE ACCESSBLE IN ALL TEMPLATES!
+         //req.user = currentUser; 
+         res.locals.user = currentUser;
+         //MUST RETURN - OTHERWISE THE NEXT() AFTER THE IF WILL BE CALLED - SECOND TIME
+          return  next();
+
+        }
+
+    //NO COOKIE! => NO LOGGED IN USER !!!!!
+    // MOVE TO NEXT M.W(AND THE USER HAS NOT BEEN SET ON THE RES.LOCALS!)
+    next();
+    }
 )
 
 exports.restrictTo = (...roles) => {
